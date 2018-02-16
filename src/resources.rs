@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 
 use ggez::graphics::{Font, Image, Text};
+use ggez::audio::Source;
 use ggez::*;
 
 use button;
@@ -23,6 +24,11 @@ pub struct Resources {
     pub card_font: Font,
     pub ui_font: Font,
     pub text: HashMap<String, Text>,
+    pub pickup_sound: Source,
+    pub place_sound: Source,
+    pub deal_sound: Source,
+    pub sweep_sound: Source,
+    pub music: Source,
 }
 
 impl Resources {
@@ -39,22 +45,22 @@ impl Resources {
         }
 
         let mut suite_icons = HashMap::new();
-        suite_icons.insert(cards::Color::Green, Image::new(ctx, "/Content/textures/solitaire/small_icons/bamboo.png")?);
-        suite_icons.insert(cards::Color::Red, Image::new(ctx, "/Content/textures/solitaire/small_icons/coins.png")?);
-        suite_icons.insert(cards::Color::White, Image::new(ctx, "/Content/textures/solitaire/small_icons/characters.png")?);
+        suite_icons.insert(cards::Color::Green, Image::new(ctx, "/textures/solitaire/small_icons/bamboo.png")?);
+        suite_icons.insert(cards::Color::Red, Image::new(ctx, "/textures/solitaire/small_icons/coins.png")?);
+        suite_icons.insert(cards::Color::White, Image::new(ctx, "/textures/solitaire/small_icons/characters.png")?);
         for img in suite_icons.values_mut() {
             img.set_filter(graphics::FilterMode::Nearest);
         }
 
         let mut dragon_icons = HashMap::new();
-        dragon_icons.insert(cards::Color::Green, Image::new(ctx, "/Content/textures/solitaire/small_icons/dragon_green.png")?);
-        dragon_icons.insert(cards::Color::Red, Image::new(ctx, "/Content/textures/solitaire/small_icons/dragon_red.png")?);
-        dragon_icons.insert(cards::Color::White, Image::new(ctx, "/Content/textures/solitaire/small_icons/dragon_white.png")?);
+        dragon_icons.insert(cards::Color::Green, Image::new(ctx, "/textures/solitaire/small_icons/dragon_green.png")?);
+        dragon_icons.insert(cards::Color::Red, Image::new(ctx, "/textures/solitaire/small_icons/dragon_red.png")?);
+        dragon_icons.insert(cards::Color::White, Image::new(ctx, "/textures/solitaire/small_icons/dragon_white.png")?);
         for img in dragon_icons.values_mut() {
             img.set_filter(graphics::FilterMode::Nearest);
         }
 
-        let mut flower_icon = Image::new(ctx, "/Content/textures/solitaire/small_icons/flower.png")?;
+        let mut flower_icon = Image::new(ctx, "/textures/solitaire/small_icons/flower.png")?;
         flower_icon.set_filter(graphics::FilterMode::Nearest);
 
         let mut suite_images = HashMap::new();
@@ -62,13 +68,13 @@ impl Resources {
         let mut white = Vec::with_capacity(9);
         let mut red = Vec::with_capacity(9);
         for i in 1..10 {
-            let mut img = Image::new(ctx, format!("/Content/textures/solitaire/large_icons/bamboo_{}.png", i))?;
+            let mut img = Image::new(ctx, format!("/textures/solitaire/large_icons/bamboo_{}.png", i))?;
             img.set_filter(graphics::FilterMode::Linear);
             green.push(img);
-            let mut img = Image::new(ctx, format!("/Content/textures/solitaire/large_icons/coins_{}.png", i))?;
+            let mut img = Image::new(ctx, format!("/textures/solitaire/large_icons/coins_{}.png", i))?;
             img.set_filter(graphics::FilterMode::Linear);
             red.push(img);
-            let mut img = Image::new(ctx, format!("/Content/textures/solitaire/large_icons/char_{}.png", i))?;
+            let mut img = Image::new(ctx, format!("/textures/solitaire/large_icons/char_{}.png", i))?;
             img.set_filter(graphics::FilterMode::Linear);
             white.push(img);
         }
@@ -77,31 +83,31 @@ impl Resources {
         suite_images.insert(cards::Color::White, white);
 
         let mut dragon_images = HashMap::new();
-        dragon_images.insert(cards::Color::Green, Image::new(ctx, "/Content/textures/solitaire/large_icons/dragon_green.png")?);
-        dragon_images.insert(cards::Color::Red, Image::new(ctx, "/Content/textures/solitaire/large_icons/dragon_red.png")?);
-        dragon_images.insert(cards::Color::White, Image::new(ctx, "/Content/textures/solitaire/large_icons/dragon_white.png")?);
+        dragon_images.insert(cards::Color::Green, Image::new(ctx, "/textures/solitaire/large_icons/dragon_green.png")?);
+        dragon_images.insert(cards::Color::Red, Image::new(ctx, "/textures/solitaire/large_icons/dragon_red.png")?);
+        dragon_images.insert(cards::Color::White, Image::new(ctx, "/textures/solitaire/large_icons/dragon_white.png")?);
         for img in dragon_images.values_mut() {
             img.set_filter(graphics::FilterMode::Linear);
         }
 
-        let mut flower_image = Image::new(ctx, "/Content/textures/solitaire/large_icons/flower.png")?;
+        let mut flower_image = Image::new(ctx, "/textures/solitaire/large_icons/flower.png")?;
         flower_image.set_filter(graphics::FilterMode::Linear);
 
         let mut button_images = HashMap::new();
-        button_images.insert((cards::Color::Green, button::State::Active), Image::new(ctx, "/Content/textures/solitaire/button_green_active.png")?);
-        button_images.insert((cards::Color::Green, button::State::Up), Image::new(ctx, "/Content/textures/solitaire/button_green_up.png")?);
-        button_images.insert((cards::Color::Green, button::State::Down), Image::new(ctx, "/Content/textures/solitaire/button_green_down.png")?);
-        button_images.insert((cards::Color::Red, button::State::Active), Image::new(ctx, "/Content/textures/solitaire/button_red_active.png")?);
-        button_images.insert((cards::Color::Red, button::State::Up), Image::new(ctx, "/Content/textures/solitaire/button_red_up.png")?);
-        button_images.insert((cards::Color::Red, button::State::Down), Image::new(ctx, "/Content/textures/solitaire/button_red_down.png")?);
-        button_images.insert((cards::Color::White, button::State::Active), Image::new(ctx, "/Content/textures/solitaire/button_white_active.png")?);
-        button_images.insert((cards::Color::White, button::State::Up), Image::new(ctx, "/Content/textures/solitaire/button_white_up.png")?);
-        button_images.insert((cards::Color::White, button::State::Down), Image::new(ctx, "/Content/textures/solitaire/button_white_down.png")?);
+        button_images.insert((cards::Color::Green, button::State::Active), Image::new(ctx, "/textures/solitaire/button_green_active.png")?);
+        button_images.insert((cards::Color::Green, button::State::Up), Image::new(ctx, "/textures/solitaire/button_green_up.png")?);
+        button_images.insert((cards::Color::Green, button::State::Down), Image::new(ctx, "/textures/solitaire/button_green_down.png")?);
+        button_images.insert((cards::Color::Red, button::State::Active), Image::new(ctx, "/textures/solitaire/button_red_active.png")?);
+        button_images.insert((cards::Color::Red, button::State::Up), Image::new(ctx, "/textures/solitaire/button_red_up.png")?);
+        button_images.insert((cards::Color::Red, button::State::Down), Image::new(ctx, "/textures/solitaire/button_red_down.png")?);
+        button_images.insert((cards::Color::White, button::State::Active), Image::new(ctx, "/textures/solitaire/button_white_active.png")?);
+        button_images.insert((cards::Color::White, button::State::Up), Image::new(ctx, "/textures/solitaire/button_white_up.png")?);
+        button_images.insert((cards::Color::White, button::State::Down), Image::new(ctx, "/textures/solitaire/button_white_down.png")?);
 
         let r = Resources {
-            table_image: Image::new(ctx, "/Content/textures/solitaire/table_large.png")?,
-            card_front: Image::new(ctx, "/Content/textures/solitaire/card_front.png")?,
-            card_back: Image::new(ctx, "/Content/textures/solitaire/card_back.png")?,
+            table_image: Image::new(ctx, "/textures/solitaire/table_large.png")?,
+            card_front: Image::new(ctx, "/textures/solitaire/card_front.png")?,
+            card_back: Image::new(ctx, "/textures/solitaire/card_back.png")?,
             numbers,
             suite_icons,
             dragon_icons,
@@ -112,7 +118,12 @@ impl Resources {
             button_images,
             card_font,
             ui_font,
-            text: HashMap::new()
+            text: HashMap::new(),
+            pickup_sound: Source::new(ctx, "/sounds/card_pickup.wav")?,
+            place_sound: Source::new(ctx, "/sounds/card_place.wav")?,
+            deal_sound: Source::new(ctx, "/sounds/card_deal.wav")?,
+            sweep_sound: Source::new(ctx, "/sounds/card_sweep.wav")?,
+            music: Source::new(ctx, "/music/Solitaire.ogg")?,
         };
         Ok(r)
     }

@@ -1,9 +1,6 @@
 
-use std::collections::HashMap;
-
 use button;
 use cards::{Card, Color, Suite};
-use cardstack::CardStack;
 use mainstate::MainState;
 
 #[derive(Debug)]

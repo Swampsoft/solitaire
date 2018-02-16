@@ -1,7 +1,4 @@
 
-use std::iter;
-use std::slice;
-
 use ggez::*;
 use ggez::graphics::*;
 use ggez::event::*;
@@ -42,7 +39,7 @@ impl MainState {
             button::Button::new(Color::White, Point2::new(533.0, 220.0)),
         };
 
-        let mut stacks = vec!{
+        let stacks = vec!{
             CardStack::new_dragon(45, 20),
             CardStack::new_dragon(197, 20),
             CardStack::new_dragon(349, 20),
@@ -95,7 +92,7 @@ impl MainState {
             cards.push(Card::new(Suite::Number(i, Color::White)));
         }
 
-        for i in 0..4 {
+        for _ in 0..4 {
             cards.push(Card::new(Suite::Dragon(Color::Red)));
             cards.push(Card::new(Suite::Dragon(Color::Green)));
             cards.push(Card::new(Suite::Dragon(Color::White)));
@@ -147,6 +144,11 @@ impl event::EventHandler for MainState {
             .map(|i|self.stacks[*i].top_card())
             .any(|tc|tc.is_some());
 
+        if !self.resources.music.playing() {
+            self.resources.music.set_volume(0.5);
+            self.resources.music.play()?;
+        }
+
         Ok(())
     }
 
@@ -171,7 +173,7 @@ impl event::EventHandler for MainState {
         if !self.game_running {
             let text = self.resources.get_text(ctx, "Click anywhere to start a new game.")?;
             text.draw(ctx, Point2::new(640.0 - text.width() as f32 / 2.0,
-                                       403.0 - text.height() as f32 / 2.0), 0.0);
+                                       403.0 - text.height() as f32 / 2.0), 0.0)?;
         }
 
         graphics::present(ctx);
@@ -188,6 +190,7 @@ impl event::EventHandler for MainState {
             if let Some(s) = stack.start_drag(x as f32, y as f32) {
                 self.dragsource = i;
                 self.dragging = Some(s);
+                self.resources.pickup_sound.play().unwrap();
                 return
             }
         }
@@ -217,9 +220,11 @@ impl event::EventHandler for MainState {
                 if stack.accept(&dstack) {
                     stack.push(dstack);
                     self.dirty = true;
+                    self.resources.place_sound.play().unwrap();
                     return
                 }
             }
+            self.resources.place_sound.play().unwrap();
             self.stacks[self.dragsource].push(dstack);
         }
     }

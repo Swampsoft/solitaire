@@ -21,14 +21,6 @@ impl BoundingBox {
         BoundingBox::new(f32::INFINITY, -f32::INFINITY, f32::INFINITY, -f32::INFINITY)
     }
 
-    pub fn merged(&self, other: &BoundingBox) -> BoundingBox {
-        let l = f32::min(self.topleft.x, other.topleft.x);
-        let t = f32::min(self.topleft.y, other.topleft.y);
-        let r = f32::max(self.bottomright.x, other.bottomright.x);
-        let b = f32::max(self.bottomright.y, other.bottomright.y);
-        BoundingBox::new(l, r, t, b)
-    }
-
     pub fn merge(&mut self, other: &BoundingBox) {
         self.topleft.x = f32::min(self.topleft.x, other.topleft.x);
         self.topleft.y = f32::min(self.topleft.y, other.topleft.y);

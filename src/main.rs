@@ -15,7 +15,7 @@ use ggez::conf;
 
 use mainstate::MainState;
 
-const SHENZHEN_PATH: &str =".local/share/Steam/SteamApps/common/SHENZHEN IO/";
+const SHENZHEN_PATH: &str =".local/share/Steam/SteamApps/common/SHENZHEN IO/Content/";
 
 
 
