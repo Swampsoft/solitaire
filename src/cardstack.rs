@@ -63,6 +63,11 @@ impl CardStack {
         }
     }
 
+    pub fn clear(&mut self) {
+        self.cards.clear();
+        self.update_bounds();
+    }
+
     pub fn push_card(&mut self, mut card: Card) {
         card.set_pos(self.pos + self.rel * self.cards.len() as f32);
         self.bbox.merge(&card.get_bounds());

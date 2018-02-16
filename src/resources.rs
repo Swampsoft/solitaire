@@ -1,5 +1,6 @@
 
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 
 use ggez::graphics::{Font, Image, Text};
 use ggez::*;
@@ -18,13 +19,17 @@ pub struct Resources {
     pub suite_images: HashMap<cards::Color, Vec<Image>>,
     pub dragon_images: HashMap<cards::Color, Image>,
     pub flower_image: Image,
-    pub button_images: HashMap<(cards::Color, button::State), Image>
+    pub button_images: HashMap<(cards::Color, button::State), Image>,
+    pub card_font: Font,
+    pub ui_font: Font,
+    pub text: HashMap<String, Text>,
 }
 
 impl Resources {
     pub fn new(ctx: &mut Context) -> GameResult<Resources> {
         //let card_font = Font::default_font()?;
         let card_font = Font::new(ctx, "/glacial/GlacialIndifference-Bold.ttf", 25)?;
+        let ui_font = Font::new(ctx, "/glacial/GlacialIndifference-Bold.ttf", 42)?;
 
         let mut numbers = Vec::new();
         for i in 1..10 {
@@ -105,7 +110,18 @@ impl Resources {
             dragon_images,
             flower_image,
             button_images,
+            card_font,
+            ui_font,
+            text: HashMap::new()
         };
         Ok(r)
+    }
+
+    pub fn get_text(&mut self, ctx: &mut Context, s: &str) -> GameResult<&Text> {
+        let text = match self.text.entry(s.to_owned()) {
+            Entry::Occupied(o) => o.into_mut(),
+            Entry::Vacant(v) => v.insert(Text::new(ctx, s, &self.ui_font)?)
+        };
+        Ok(text)
     }
 }

@@ -25,6 +25,7 @@ pub struct MainState {
     pub solitaire_stacks: Vec<usize>,
     pub flower_stack: usize,
     dirty: bool,
+    game_running: bool,
 }
 
 impl MainState {
@@ -64,6 +65,28 @@ impl MainState {
         let solitaire_stacks: Vec<usize> = (6..14).collect();
         let flower_stack = 14;
 
+        let s = MainState {
+            resources: Resources::new(ctx)?,
+            dragging: None,
+            dragsource: 0,
+            stacks,
+            buttons,
+            dragon_stacks,
+            target_stacks,
+            solitaire_stacks,
+            flower_stack,
+            dirty: true,
+            game_running: false,
+        };
+        Ok(s)
+    }
+
+    pub fn new_game(&mut self) {
+
+        for stack in self.stacks.iter_mut() {
+            stack.clear()
+        }
+
         let mut cards = Vec::with_capacity(40);
 
         for i in 1..10 {
@@ -82,23 +105,12 @@ impl MainState {
 
         thread_rng().shuffle(&mut cards);
 
-        for (card, s) in cards.drain(..).zip(solitaire_stacks.iter().cycle()) {
-            stacks[*s].push_card(card);
+        for (card, s) in cards.drain(..).zip(self.solitaire_stacks.iter().cycle()) {
+            self.stacks[*s].push_card(card);
         }
 
-        let s = MainState {
-            resources: Resources::new(ctx)?,
-            dragging: None,
-            dragsource: 0,
-            stacks,
-            buttons,
-            dragon_stacks,
-            target_stacks,
-            solitaire_stacks,
-            flower_stack,
-            dirty: true,
-        };
-        Ok(s)
+        self.game_running = true;
+        self.dirty = true;
     }
 
     pub fn set_dirty(&mut self) {
@@ -129,6 +141,12 @@ impl event::EventHandler for MainState {
             self.dirty = false;
             rules::global_rules(self);  // TODO: actually we only need to call this after a card was moved
         }
+
+        self.game_running = self.solitaire_stacks
+            .iter()
+            .map(|i|self.stacks[*i].top_card())
+            .any(|tc|tc.is_some());
+
         Ok(())
     }
 
@@ -150,11 +168,22 @@ impl event::EventHandler for MainState {
             stack.draw(ctx, &self.resources)?;
         }
 
+        if !self.game_running {
+            let text = self.resources.get_text(ctx, "Click anywhere to start a new game.")?;
+            text.draw(ctx, Point2::new(640.0 - text.width() as f32 / 2.0,
+                                       403.0 - text.height() as f32 / 2.0), 0.0);
+        }
+
         graphics::present(ctx);
         Ok(())
     }
 
     fn mouse_button_down_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: i32, y: i32) {
+        if !self.game_running {
+            self.new_game();
+            return
+        }
+
         for (i, stack) in self.stacks.iter_mut().enumerate() {
             if let Some(s) = stack.start_drag(x as f32, y as f32) {
                 self.dragsource = i;
@@ -164,14 +193,11 @@ impl event::EventHandler for MainState {
         }
         for button in &self.buttons {
             if button.accept_click(x as f32, y as f32) {
-                println!("Button {:?} accepted click", button);
                 let t = self.find_dragon_target(button.color()).unwrap();
-                println!("Target: {}", t);
                 for i in self.dragon_and_solitaire_stacks() {
                     if let Some(&Suite::Dragon(color)) = self.stacks[i].top_card().map(|c|c.suite()) {
                         if color == button.color() {
                             let mut card = self.stacks[i].pop().unwrap();
-                            println!("Moving {:?} from {} to {}", card, i, t);
                             card.set_faceup(false);
                             self.stacks[t].push_card(card);
                             self.dirty = true;
