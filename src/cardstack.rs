@@ -53,7 +53,7 @@ impl CardStack {
         let (x, y) = (x as f32, y as f32);
         CardStack {
             pos: Point2::new(x, y),
-            rel: Vector2::new(0.0, 20.0),
+            rel: Vector2::new(0.0, 32.0),
             bbox: BoundingBox::new(x, x + cards::WIDTH, y, y + cards::HEIGHT),
             cards: Vec::new(),
             rules: StackRules::Solitaire,
@@ -119,7 +119,7 @@ impl CardStack {
                     Some(card) => if !card.is_faceup() { return None }
                 }
                 let card = self.cards.pop().unwrap();
-                let mut ds = CardStack {
+                let ds = CardStack {
                     pos: card.get_pos(),
                     rel: self.rel,
                     bbox: card.get_bounds(),
@@ -163,7 +163,7 @@ impl CardStack {
 
     pub fn draw(&self, ctx: &mut Context, res: &Resources) -> GameResult<()> {
         for card in &self.cards {
-            card.draw(ctx, res);
+            card.draw(ctx, res)?;
         }
         Ok(())
     }

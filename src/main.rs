@@ -16,7 +16,7 @@ use ggez::graphics::{DrawMode, Point2};
 
 use mainstate::MainState;
 
-const SHENZHEN_PATH: &str =".local/share/Steam/SteamApps/common/SHENZHEN IO/Content/textures/solitaire/";
+const SHENZHEN_PATH: &str =".local/share/Steam/SteamApps/common/SHENZHEN IO/";
 
 
 

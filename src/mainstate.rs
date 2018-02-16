@@ -3,7 +3,7 @@ use ggez::*;
 use ggez::graphics::*;
 use ggez::event::*;
 
-use cards::Card;
+use cards::{Card, Color, Suite};
 use cardstack::CardStack;
 use resources::Resources;
 
@@ -41,25 +41,25 @@ impl MainState {
             CardStack::new_solitaire(1109, 283),
         };
 
-        for _ in 0..0 {
-            stacks[0].add_card(Card::new());
-            stacks[1].add_card(Card::new());
-            stacks[2].add_card(Card::new());
+        for _ in 0..1 {
+            stacks[0].add_card(Card::new(Suite::Dragon(Color::Red)));
+            stacks[1].add_card(Card::new(Suite::Dragon(Color::Green)));
+            stacks[2].add_card(Card::new(Suite::Dragon(Color::White)));
         }
         for _ in 0..1 {
-            stacks[3].add_card(Card::new());
-            stacks[4].add_card(Card::new());
-            stacks[5].add_card(Card::new());
+            stacks[3].add_card(Card::new(Suite::Number(4, Color::Red)));
+            stacks[4].add_card(Card::new(Suite::Number(5, Color::Green)));
+            stacks[5].add_card(Card::new(Suite::Number(6, Color::White)));
         }
         for _ in 0..1 {
-            stacks[6].add_card(Card::new());
-            stacks[7].add_card(Card::new());
-            stacks[8].add_card(Card::new());
-            stacks[9].add_card(Card::new());
-            stacks[10].add_card(Card::new());
-            stacks[11].add_card(Card::new());
-            stacks[12].add_card(Card::new());
-            stacks[13].add_card(Card::new());
+            stacks[6].add_card(Card::new(Suite::Number(7, Color::Red)));
+            stacks[7].add_card(Card::new(Suite::Number(8, Color::Green)));
+            stacks[8].add_card(Card::new(Suite::Number(9, Color::White)));
+            stacks[9].add_card(Card::new(Suite::Number(1, Color::Red)));
+            stacks[10].add_card(Card::new(Suite::Number(2, Color::Red)));
+            stacks[11].add_card(Card::new(Suite::Number(3, Color::Green)));
+            stacks[12].add_card(Card::new(Suite::Number(4, Color::Red)));
+            stacks[13].add_card(Card::new(Suite::Flower));
         }
 
         let s = MainState {
@@ -80,6 +80,8 @@ impl event::EventHandler for MainState {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx);
+
+        set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0));
         graphics::draw(ctx, &self.resources.table_image, Point2::new(0.0, 0.0), 0.0)?;
 
         for stack in &self.stacks {
@@ -104,7 +106,7 @@ impl event::EventHandler for MainState {
         }
     }
 
-    fn mouse_button_up_event(&mut self, _ctx: &mut Context, button: MouseButton, x: i32, y: i32) {
+    fn mouse_button_up_event(&mut self, _ctx: &mut Context, button: MouseButton, _x: i32, _y: i32) {
         if let Some(dstack) = self.dragging.take() {
             for (i, stack) in self.stacks.iter_mut().enumerate() {
                 if i == self.dragsource {
@@ -120,7 +122,7 @@ impl event::EventHandler for MainState {
     }
 
     fn mouse_motion_event(&mut self, _ctx: &mut Context, _state: MouseState,
-                          x: i32, y: i32, xrel: i32, yrel: i32) {
+                          _x: i32, _y: i32, xrel: i32, yrel: i32) {
         if let Some(ref mut stack) = self.dragging {
             stack.move_pos(xrel as f32, yrel as f32);
         }
