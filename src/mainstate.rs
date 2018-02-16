@@ -136,7 +136,7 @@ impl event::EventHandler for MainState {
         //println!("FPS: {}", timer::get_fps(ctx));
         while self.dirty {
             self.dirty = false;
-            rules::global_rules(self);  // TODO: actually we only need to call this after a card was moved
+            rules::global_rules(self);
         }
 
         self.game_running = self.solitaire_stacks
