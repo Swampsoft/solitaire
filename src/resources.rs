@@ -10,6 +10,7 @@ use cards;
 pub struct Resources {
     pub table_image: Image,
     pub card_front: Image,
+    pub card_back: Image,
     pub numbers: Vec<Text>,
     pub suite_icons: HashMap<cards::Color, Image>,
     pub dragon_icons: HashMap<cards::Color, Image>,
@@ -95,6 +96,7 @@ impl Resources {
         let r = Resources {
             table_image: Image::new(ctx, "/Content/textures/solitaire/table_large.png")?,
             card_front: Image::new(ctx, "/Content/textures/solitaire/card_front.png")?,
+            card_back: Image::new(ctx, "/Content/textures/solitaire/card_back.png")?,
             numbers,
             suite_icons,
             dragon_icons,

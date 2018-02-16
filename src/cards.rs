@@ -31,6 +31,10 @@ impl Card {
         }
     }
 
+    pub fn set_faceup(&mut self, b: bool) {
+        self.face_up = b;
+    }
+
     pub fn is_faceup(&self) -> bool {
         self.face_up
     }
@@ -68,8 +72,12 @@ impl Card {
 
     pub fn draw(&self, ctx: &mut Context, res: &Resources) -> GameResult<()> {
         graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        res.card_front.draw(ctx, self.pos, 0.0)?;
-        self.suite.draw(ctx, self.pos, res)?;
+        if self.face_up {
+            res.card_front.draw(ctx, self.pos, 0.0)?;
+            self.suite.draw(ctx, self.pos, res)?;
+        } else {
+            res.card_back.draw(ctx, self.pos, 0.0)?;
+        }
         Ok(())
     }
 }

@@ -1,6 +1,6 @@
 
 use cards;
-use cards::Card;
+use cards::{Card, Suite};
 use ggez::*;
 use ggez::graphics::*;
 
@@ -62,16 +62,28 @@ impl CardStack {
         }
     }
 
-    pub fn add_card(&mut self, mut card: Card) {
+    pub fn push_card(&mut self, mut card: Card) {
         card.set_pos(self.pos + self.rel * self.cards.len() as f32);
         self.bbox.merge(&card.get_bounds());
         self.cards.push(card);
     }
 
+    pub fn top_card(&self) -> Option<&Card> {
+        self.cards.last()
+    }
+
+    pub fn top_suite(&self) -> Option<&Suite> {
+        self.cards.last().map(|c|c.suite())
+    }
+
     pub fn push(&mut self, stack: CardStack) {
         for card in stack.cards {
-            self.add_card(card);
+            self.push_card(card);
         }
+    }
+
+    pub fn pop(&mut self) -> Option<Card> {
+        self.cards.pop()
     }
 
     pub fn update_bounds(&mut self) {
@@ -151,7 +163,8 @@ impl CardStack {
         // TODO: implement rules
         if self.bbox.is_touching(&other.bbox) {
             self.rules.accept_drop(self.cards.last().map(|c|c.suite()),
-                                   other.cards.first().expect("Who's dragging an empty card stack around???").suite())
+                                   other.cards.first().expect("Who's dragging an empty card stack around???").suite(),
+                                   other.cards.len())
         } else {
             false
         }

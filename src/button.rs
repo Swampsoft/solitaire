@@ -15,6 +15,7 @@ pub enum State {
     Down,
 }
 
+#[derive(Debug)]
 pub struct Button {
     color: Color,
     pos: Point2,
@@ -30,10 +31,22 @@ impl Button {
         }
     }
 
-    pub fn accept_click(&self, p: Point2) -> bool {
+    pub fn color(&self) -> Color {
+        self.color
+    }
+
+    pub fn state(&self) -> State {
+        self.state
+    }
+
+    pub fn set_state(&mut self, state: State) {
+        self.state = state;
+    }
+
+    pub fn accept_click(&self, x: f32, y: f32) -> bool {
         if let State::Active = self.state {
-            let dx = self.pos.x - p.x;
-            let dy = self.pos.y - p.y;
+            let dx = self.pos.x - x;
+            let dy = self.pos.y - y;
             dx * dx + dy * dy <= RADIUS2
         } else {
             false

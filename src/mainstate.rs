@@ -1,4 +1,7 @@
 
+use std::iter;
+use std::slice;
+
 use ggez::*;
 use ggez::graphics::*;
 use ggez::event::*;
@@ -9,13 +12,18 @@ use button;
 use cards::{Card, Color, Suite};
 use cardstack::CardStack;
 use resources::Resources;
+use rules;
 
 pub struct MainState {
     resources: Resources,
     dragging: Option<CardStack>,
     dragsource: usize,
-    stacks: Vec<CardStack>,
-    buttons: Vec<button::Button>,
+    pub stacks: Vec<CardStack>,
+    pub buttons: Vec<button::Button>,
+    pub dragon_stacks: Vec<usize>,
+    pub target_stacks: Vec<usize>,
+    pub solitaire_stacks: Vec<usize>,
+    pub flower_stack: usize,
 }
 
 impl MainState {
@@ -29,7 +37,7 @@ impl MainState {
         let buttons = vec!{
             button::Button::new(Color::Red, Point2::new(533.0, 54.0)),
             button::Button::new(Color::Green, Point2::new(533.0, 137.0)),
-            button::Button::new(Color::Green, Point2::new(533.0, 220.0)),
+            button::Button::new(Color::White, Point2::new(533.0, 220.0)),
         };
 
         let mut stacks = vec!{
@@ -50,6 +58,11 @@ impl MainState {
             CardStack::new_rose(614, 20),
         };
 
+        let dragon_stacks = vec!(0, 1, 2);
+        let target_stacks = vec!(3, 4, 5);
+        let solitaire_stacks: Vec<usize> = (6..14).collect();
+        let flower_stack = 14;
+
         let mut cards = Vec::with_capacity(40);
 
         for i in 1..10 {
@@ -68,8 +81,8 @@ impl MainState {
 
         thread_rng().shuffle(&mut cards);
 
-        for (card, s) in cards.drain(..).zip((6..14).cycle()) {
-            stacks[s].add_card(card);
+        for (card, s) in cards.drain(..).zip(solitaire_stacks.iter().cycle()) {
+            stacks[*s].push_card(card);
         }
 
         let s = MainState {
@@ -78,14 +91,35 @@ impl MainState {
             dragsource: 0,
             stacks,
             buttons,
+            dragon_stacks,
+            target_stacks,
+            solitaire_stacks,
+            flower_stack
         };
         Ok(s)
+    }
+
+    pub fn find_dragon_target(&self, color: Color) -> Option<usize> {
+        let mut target = None;
+        for i in self.dragon_stacks.iter() {
+            match self.stacks[*i].top_suite() {
+                Some(&Suite::Dragon(c)) if c == color => return Some(*i),
+                None => target = Some(*i),
+                _ => {}
+            }
+        }
+        target
+    }
+
+    pub fn dragon_and_solitaire_stacks(&self) -> Vec<usize> {
+        self.dragon_stacks.iter().chain(&self.solitaire_stacks).map(|i|*i).collect()
     }
 }
 
 impl event::EventHandler for MainState {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         //println!("FPS: {}", timer::get_fps(ctx));
+        rules::global_rules(self);  // TODO: actually we only need to call this after a card was moved
         Ok(())
     }
 
@@ -116,7 +150,24 @@ impl event::EventHandler for MainState {
             if let Some(s) = stack.start_drag(x as f32, y as f32) {
                 self.dragsource = i;
                 self.dragging = Some(s);
-                break
+                return
+            }
+        }
+        for button in &self.buttons {
+            if button.accept_click(x as f32, y as f32) {
+                println!("Button {:?} accepted click", button);
+                let t = self.find_dragon_target(button.color()).unwrap();
+                println!("Target: {}", t);
+                for i in self.dragon_and_solitaire_stacks() {
+                    if let Some(&Suite::Dragon(color)) = self.stacks[i].top_card().map(|c|c.suite()) {
+                        if color == button.color() {
+                            let mut card = self.stacks[i].pop().unwrap();
+                            println!("Moving {:?} from {} to {}", card, i, t);
+                            card.set_faceup(false);
+                            self.stacks[t].push_card(card);
+                        }
+                    }
+                }
             }
         }
     }
