@@ -24,6 +24,7 @@ pub struct MainState {
     pub target_stacks: Vec<usize>,
     pub solitaire_stacks: Vec<usize>,
     pub flower_stack: usize,
+    dirty: bool,
 }
 
 impl MainState {
@@ -94,9 +95,14 @@ impl MainState {
             dragon_stacks,
             target_stacks,
             solitaire_stacks,
-            flower_stack
+            flower_stack,
+            dirty: true,
         };
         Ok(s)
+    }
+
+    pub fn set_dirty(&mut self) {
+        self.dirty = true;
     }
 
     pub fn find_dragon_target(&self, color: Color) -> Option<usize> {
@@ -119,7 +125,10 @@ impl MainState {
 impl event::EventHandler for MainState {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         //println!("FPS: {}", timer::get_fps(ctx));
-        rules::global_rules(self);  // TODO: actually we only need to call this after a card was moved
+        while self.dirty {
+            self.dirty = false;
+            rules::global_rules(self);  // TODO: actually we only need to call this after a card was moved
+        }
         Ok(())
     }
 
@@ -165,6 +174,7 @@ impl event::EventHandler for MainState {
                             println!("Moving {:?} from {} to {}", card, i, t);
                             card.set_faceup(false);
                             self.stacks[t].push_card(card);
+                            self.dirty = true;
                         }
                     }
                 }
@@ -180,6 +190,7 @@ impl event::EventHandler for MainState {
                 }
                 if stack.accept(&dstack) {
                     stack.push(dstack);
+                    self.dirty = true;
                     return
                 }
             }

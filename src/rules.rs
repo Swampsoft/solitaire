@@ -69,16 +69,30 @@ pub fn global_rules(state: &mut MainState) {
             _ => {}
         }
 
+        let i_min = state.target_stacks.iter().map(|s| {
+            match state.stacks[*s].top_suite() {
+                Some(&Number(i, _)) => i,
+                None => 0,
+                _ => panic!("Invalid state of target stack")
+            }
+        }).min().unwrap_or(0);
+
         for t in &state.target_stacks {
             let target_suite = state.stacks[*t].top_suite();
             match (top_suite, target_suite) {
                 (Some(&Number(1, _)), None) => {},
-                (Some(&Number(i2, c2)), Some(&Number(i1, c1))) if c1 == c2 && i2 == i1 + 1 => {},
+                (Some(&Number(i2, c2)), Some(&Number(i1, c1))) if c1 == c2 && i2 == i1 + 1 && i2 == i_min + 1=> {},
                 _ => continue
             }
             auto_move.push((i, *t));
             break
         }
+    }
+
+    for (s, t) in auto_move {
+        let card = state.stacks[s].pop().unwrap();
+        state.stacks[t].push_card(card);
+        state.set_dirty();
     }
 
     for b in 0..state.buttons.len() {
@@ -95,6 +109,5 @@ pub fn global_rules(state: &mut MainState) {
             Color::White if n_white_dragons == 4 => state.buttons[b].set_state(button::State::Active),
             _ => state.buttons[b].set_state(button::State::Up)
         }
-
     }
 }
