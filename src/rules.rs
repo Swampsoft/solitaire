@@ -51,6 +51,17 @@ impl StackRules {
     }
 }
 
+pub fn valid_stack(cards: &[Card]) -> bool {
+    use self::Suite::*;
+    for (a, b) in cards.iter().zip(cards[1..].iter()) {
+        match (a.suite(), b.suite()) {
+            (&Number(ia, ca), &Number(ib, cb)) if ca != cb && ia == ib +1 => continue,
+            _ => return false
+        }
+    }
+    return true
+}
+
 pub fn global_rules(state: &mut MainState) {
     use self::Suite::*;
 

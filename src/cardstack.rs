@@ -7,6 +7,7 @@ use ggez::graphics::*;
 use bbox::BoundingBox;
 use resources::Resources;
 use rules::StackRules;
+use rules;
 
 #[derive(Debug)]
 pub struct CardStack {
@@ -144,11 +145,15 @@ impl CardStack {
                     return None
                 }
                 let idx = idx.unwrap();
+                if !rules::valid_stack(&self.cards[idx..]) {
+                    return None
+                }
+                let cards: Vec<_> = self.cards.drain(idx..).collect();
                 let mut ds = CardStack {
-                    pos: self.cards[idx].get_pos(),
+                    pos: cards[0].get_pos(),
                     rel: self.rel,
                     bbox: BoundingBox::new_empty(),
-                    cards: self.cards.drain(idx..).collect(),
+                    cards,
                     rules: StackRules::Dragging,
                 };
                 ds.update_bounds();
