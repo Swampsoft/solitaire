@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use ggez::graphics::{Font, Image, Text};
 use ggez::*;
 
+use button;
 use cards;
 
 pub struct Resources {
@@ -16,6 +17,7 @@ pub struct Resources {
     pub suite_images: HashMap<cards::Color, Vec<Image>>,
     pub dragon_images: HashMap<cards::Color, Image>,
     pub flower_image: Image,
+    pub button_images: HashMap<(cards::Color, button::State), Image>
 }
 
 impl Resources {
@@ -79,6 +81,17 @@ impl Resources {
         let mut flower_image = Image::new(ctx, "/Content/textures/solitaire/large_icons/flower.png")?;
         flower_image.set_filter(graphics::FilterMode::Linear);
 
+        let mut button_images = HashMap::new();
+        button_images.insert((cards::Color::Green, button::State::Active), Image::new(ctx, "/Content/textures/solitaire/button_green_active.png")?);
+        button_images.insert((cards::Color::Green, button::State::Up), Image::new(ctx, "/Content/textures/solitaire/button_green_up.png")?);
+        button_images.insert((cards::Color::Green, button::State::Down), Image::new(ctx, "/Content/textures/solitaire/button_green_down.png")?);
+        button_images.insert((cards::Color::Red, button::State::Active), Image::new(ctx, "/Content/textures/solitaire/button_red_active.png")?);
+        button_images.insert((cards::Color::Red, button::State::Up), Image::new(ctx, "/Content/textures/solitaire/button_red_up.png")?);
+        button_images.insert((cards::Color::Red, button::State::Down), Image::new(ctx, "/Content/textures/solitaire/button_red_down.png")?);
+        button_images.insert((cards::Color::White, button::State::Active), Image::new(ctx, "/Content/textures/solitaire/button_white_active.png")?);
+        button_images.insert((cards::Color::White, button::State::Up), Image::new(ctx, "/Content/textures/solitaire/button_white_up.png")?);
+        button_images.insert((cards::Color::White, button::State::Down), Image::new(ctx, "/Content/textures/solitaire/button_white_down.png")?);
+
         let r = Resources {
             table_image: Image::new(ctx, "/Content/textures/solitaire/table_large.png")?,
             card_front: Image::new(ctx, "/Content/textures/solitaire/card_front.png")?,
@@ -89,6 +102,7 @@ impl Resources {
             suite_images,
             dragon_images,
             flower_image,
+            button_images,
         };
         Ok(r)
     }

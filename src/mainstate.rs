@@ -3,6 +3,9 @@ use ggez::*;
 use ggez::graphics::*;
 use ggez::event::*;
 
+use rand::{thread_rng, Rng};
+
+use button;
 use cards::{Card, Color, Suite};
 use cardstack::CardStack;
 use resources::Resources;
@@ -12,6 +15,7 @@ pub struct MainState {
     dragging: Option<CardStack>,
     dragsource: usize,
     stacks: Vec<CardStack>,
+    buttons: Vec<button::Button>,
 }
 
 impl MainState {
@@ -21,6 +25,12 @@ impl MainState {
         for c in &mut cards {
             c.set_pos(rand::random::<f32>() * 1000.0, rand::random::<f32>() * 600.0)
         }*/
+
+        let buttons = vec!{
+            button::Button::new(Color::Red, Point2::new(533.0, 54.0)),
+            button::Button::new(Color::Green, Point2::new(533.0, 137.0)),
+            button::Button::new(Color::Green, Point2::new(533.0, 220.0)),
+        };
 
         let mut stacks = vec!{
             CardStack::new_dragon(45, 20),
@@ -40,33 +50,34 @@ impl MainState {
             CardStack::new_rose(614, 20),
         };
 
-        for _ in 0..1 {
-            stacks[0].add_card(Card::new(Suite::Dragon(Color::Red)));
-            stacks[1].add_card(Card::new(Suite::Dragon(Color::Green)));
-            stacks[2].add_card(Card::new(Suite::Dragon(Color::White)));
+        let mut cards = Vec::with_capacity(40);
+
+        for i in 1..10 {
+            cards.push(Card::new(Suite::Number(i, Color::Red)));
+            cards.push(Card::new(Suite::Number(i, Color::Green)));
+            cards.push(Card::new(Suite::Number(i, Color::White)));
         }
-        for _ in 0..1 {
-            stacks[3].add_card(Card::new(Suite::Number(4, Color::Red)));
-            stacks[4].add_card(Card::new(Suite::Number(5, Color::Green)));
-            stacks[5].add_card(Card::new(Suite::Number(6, Color::White)));
+
+        for i in 0..4 {
+            cards.push(Card::new(Suite::Dragon(Color::Red)));
+            cards.push(Card::new(Suite::Dragon(Color::Green)));
+            cards.push(Card::new(Suite::Dragon(Color::White)));
         }
-        for _ in 0..1 {
-            stacks[6].add_card(Card::new(Suite::Number(7, Color::Red)));
-            stacks[7].add_card(Card::new(Suite::Number(8, Color::Green)));
-            stacks[8].add_card(Card::new(Suite::Number(9, Color::White)));
-            stacks[9].add_card(Card::new(Suite::Number(1, Color::Red)));
-            stacks[10].add_card(Card::new(Suite::Number(2, Color::Red)));
-            stacks[11].add_card(Card::new(Suite::Number(3, Color::Green)));
-            stacks[12].add_card(Card::new(Suite::Number(4, Color::Red)));
-            stacks[13].add_card(Card::new(Suite::Flower));
+
+        cards.push(Card::new(Suite::Flower));
+
+        thread_rng().shuffle(&mut cards);
+
+        for (card, s) in cards.drain(..).zip((6..14).cycle()) {
+            stacks[s].add_card(card);
         }
-        stacks[14].add_card(Card::new(Suite::Flower));
 
         let s = MainState {
             resources: Resources::new(ctx)?,
             dragging: None,
             dragsource: 0,
-            stacks
+            stacks,
+            buttons,
         };
         Ok(s)
     }
@@ -83,6 +94,10 @@ impl event::EventHandler for MainState {
 
         set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         graphics::draw(ctx, &self.resources.table_image, Point2::new(0.0, 0.0), 0.0)?;
+
+        for button in &self.buttons {
+            button.draw(ctx, &self.resources)?;
+        }
 
         for stack in &self.stacks {
             stack.draw(ctx, &self.resources)?;

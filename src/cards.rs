@@ -35,6 +35,10 @@ impl Card {
         self.face_up
     }
 
+    pub fn suite(&self) -> &Suite {
+        &self.suite
+    }
+
     pub fn get_pos(&self) -> Point2 {
         self.pos
     }
@@ -129,7 +133,7 @@ impl Suite {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Color {
     Red,
     Green,

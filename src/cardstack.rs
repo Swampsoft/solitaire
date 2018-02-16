@@ -6,16 +6,7 @@ use ggez::graphics::*;
 
 use bbox::BoundingBox;
 use resources::Resources;
-
-
-#[derive(Debug)]
-enum StackRules {
-    Dragging,
-    Target,
-    Dragon,
-    Rose,
-    Solitaire
-}
+use rules::StackRules;
 
 #[derive(Debug)]
 pub struct CardStack {
@@ -67,7 +58,7 @@ impl CardStack {
             rel: Vector2::new(0.5, -1.0),
             bbox: BoundingBox::new(x, x + cards::WIDTH, y, y + cards::HEIGHT),
             cards: Vec::new(),
-            rules: StackRules::Rose,
+            rules: StackRules::Flower,
         }
     }
 
@@ -112,7 +103,7 @@ impl CardStack {
 
         match self.rules {
             StackRules::Target |
-            StackRules::Rose => return None,
+            StackRules::Flower => return None,
             StackRules::Dragon => {
                 match self.cards.last() {
                     None => return None,
@@ -158,7 +149,12 @@ impl CardStack {
 
     pub fn accept(&self, other: &CardStack) -> bool {
         // TODO: implement rules
-        self.bbox.is_touching(&other.bbox)
+        if self.bbox.is_touching(&other.bbox) {
+            self.rules.accept_drop(self.cards.last().map(|c|c.suite()),
+                                   other.cards.first().expect("Who's dragging an empty card stack around???").suite())
+        } else {
+            false
+        }
     }
 
     pub fn draw(&self, ctx: &mut Context, res: &Resources) -> GameResult<()> {
