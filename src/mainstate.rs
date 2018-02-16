@@ -7,8 +7,6 @@ use cards::{Card, Color, Suite};
 use cardstack::CardStack;
 use resources::Resources;
 
-use rand;
-
 pub struct MainState {
     resources: Resources,
     dragging: Option<CardStack>,
@@ -39,6 +37,7 @@ impl MainState {
             CardStack::new_solitaire(805, 283),
             CardStack::new_solitaire(957, 283),
             CardStack::new_solitaire(1109, 283),
+            CardStack::new_rose(614, 20),
         };
 
         for _ in 0..1 {
@@ -61,6 +60,7 @@ impl MainState {
             stacks[12].add_card(Card::new(Suite::Number(4, Color::Red)));
             stacks[13].add_card(Card::new(Suite::Flower));
         }
+        stacks[14].add_card(Card::new(Suite::Flower));
 
         let s = MainState {
             resources: Resources::new(ctx)?,
@@ -73,7 +73,7 @@ impl MainState {
 }
 
 impl event::EventHandler for MainState {
-    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+    fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         //println!("FPS: {}", timer::get_fps(ctx));
         Ok(())
     }
@@ -81,7 +81,7 @@ impl event::EventHandler for MainState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx);
 
-        set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0));
+        set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         graphics::draw(ctx, &self.resources.table_image, Point2::new(0.0, 0.0), 0.0)?;
 
         for stack in &self.stacks {
@@ -96,7 +96,7 @@ impl event::EventHandler for MainState {
         Ok(())
     }
 
-    fn mouse_button_down_event(&mut self, _ctx: &mut Context, button: MouseButton, x: i32, y: i32) {
+    fn mouse_button_down_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: i32, y: i32) {
         for (i, stack) in self.stacks.iter_mut().enumerate() {
             if let Some(s) = stack.start_drag(x as f32, y as f32) {
                 self.dragsource = i;
@@ -106,7 +106,7 @@ impl event::EventHandler for MainState {
         }
     }
 
-    fn mouse_button_up_event(&mut self, _ctx: &mut Context, button: MouseButton, _x: i32, _y: i32) {
+    fn mouse_button_up_event(&mut self, _ctx: &mut Context, _button: MouseButton, _x: i32, _y: i32) {
         if let Some(dstack) = self.dragging.take() {
             for (i, stack) in self.stacks.iter_mut().enumerate() {
                 if i == self.dragsource {

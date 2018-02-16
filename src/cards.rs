@@ -63,8 +63,8 @@ impl Card {
     }
 
     pub fn draw(&self, ctx: &mut Context, res: &Resources) -> GameResult<()> {
-        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0));
-        res.card_front.draw(ctx, self.pos, 0.0);
+        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
+        res.card_front.draw(ctx, self.pos, 0.0)?;
         self.suite.draw(ctx, self.pos, res)?;
         Ok(())
     }
@@ -89,7 +89,7 @@ impl Suite {
 
                 large_icon = &res.flower_image;
 
-                graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0));
+                graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
             },
             Suite::Dragon(ref c) => {
                 small_icon = &res.dragon_icons[c];
@@ -97,10 +97,10 @@ impl Suite {
 
                 large_icon = &res.dragon_images[c];
 
-                c.set_icon_color(ctx);
+                c.set_icon_color(ctx)?;
             }
             Suite::Number(i, ref c) => {
-                c.set_font_color(ctx);
+                c.set_font_color(ctx)?;
                 let nr = &res.numbers[i as usize - 1];
                 let nw = nr.width() as f32 / 2.0 - 20.0;
                 let nh = nr.height() as f32 / 2.0 - 18.0;
@@ -112,7 +112,7 @@ impl Suite {
 
                 large_icon = &res.suite_images[c][i as usize - 1];
 
-                c.set_icon_color(ctx);
+                c.set_icon_color(ctx)?;
             },
         }
 

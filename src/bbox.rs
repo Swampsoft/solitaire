@@ -41,10 +41,10 @@ impl BoundingBox {
     }
 
     pub fn is_touching(&self, other: &BoundingBox) -> bool {
-        let ax = (self.topleft.x + self.bottomright.x);
-        let ay = (self.topleft.y + self.bottomright.y);
-        let bx = (other.topleft.x + other.bottomright.x);
-        let by = (other.topleft.y + other.bottomright.y);
+        let ax = self.topleft.x + self.bottomright.x;
+        let ay = self.topleft.y + self.bottomright.y;
+        let bx = other.topleft.x + other.bottomright.x;
+        let by = other.topleft.y + other.bottomright.y;
 
         let aw = self.bottomright.x - self.topleft.x;
         let ah = self.bottomright.y - self.topleft.y;

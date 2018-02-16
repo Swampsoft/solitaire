@@ -8,11 +8,8 @@ mod mainstate;
 mod resources;
 
 use std::env;
-use std::path;
 
 use ggez::conf;
-use ggez::graphics;
-use ggez::graphics::{DrawMode, Point2};
 
 use mainstate::MainState;
 
