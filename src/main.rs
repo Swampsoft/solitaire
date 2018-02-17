@@ -1,3 +1,7 @@
+
+#[cfg(feature = "profiling")]
+extern crate cpuprofiler;
+
 extern crate ggez;
 extern crate rand;
 
@@ -28,6 +32,11 @@ fn main() {
         backend: conf::Backend::OpenGL{major: 3, minor: 2},
     };
 
+    #[cfg(feature = "profiling")]
+    use cpuprofiler::PROFILER;
+    #[cfg(feature = "profiling")]
+    PROFILER.lock().unwrap().start("solitaire.profile").unwrap();
+
     let ctx = &mut ggez::Context::load_from_conf("solitaire", "Martin Billinger", c).unwrap();
 
     ctx.filesystem.mount(&env::home_dir().unwrap().join(SHENZHEN_PATH), true);
@@ -35,4 +44,7 @@ fn main() {
     let state = &mut MainState::new(ctx).unwrap();
 
     ggez::event::run(ctx, state).unwrap();
+
+    #[cfg(feature = "profiling")]
+    PROFILER.lock().unwrap().stop().unwrap();
 }
