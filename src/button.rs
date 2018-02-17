@@ -9,7 +9,7 @@ const RADIUS: f32 = 30.0;
 const RADIUS2: f32 = RADIUS * RADIUS;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
-pub enum State {
+pub enum ButtonState {
     Active,
     Up,
     Down,
@@ -19,7 +19,7 @@ pub enum State {
 pub struct Button {
     color: Color,
     pos: Point2,
-    state: State,
+    state: ButtonState,
 }
 
 impl Button {
@@ -27,7 +27,7 @@ impl Button {
         Button {
             color,
             pos,
-            state: State::Up,
+            state: ButtonState::Down,
         }
     }
 
@@ -35,16 +35,16 @@ impl Button {
         self.color
     }
 
-    pub fn state(&self) -> State {
+    pub fn state(&self) -> ButtonState {
         self.state
     }
 
-    pub fn set_state(&mut self, state: State) {
+    pub fn set_state(&mut self, state: ButtonState) {
         self.state = state;
     }
 
     pub fn accept_click(&self, x: f32, y: f32) -> bool {
-        if let State::Active = self.state {
+        if let ButtonState::Active = self.state {
             let dx = self.pos.x - x;
             let dy = self.pos.y - y;
             dx * dx + dy * dy <= RADIUS2

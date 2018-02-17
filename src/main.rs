@@ -5,19 +5,21 @@ extern crate cpuprofiler;
 extern crate ggez;
 extern crate rand;
 
+mod gamestates;
+
 mod bbox;
 mod button;
 mod cards;
 mod cardstack;
-mod mainstate;
 mod resources;
 mod rules;
+mod table;
 
 use std::env;
 
 use ggez::conf;
 
-use mainstate::MainState;
+use gamestates::GameWrapper;
 
 const SHENZHEN_PATH: &str =".local/share/Steam/SteamApps/common/SHENZHEN IO/Content/";
 
@@ -41,9 +43,13 @@ fn main() {
 
     ctx.filesystem.mount(&env::home_dir().unwrap().join(SHENZHEN_PATH), true);
 
-    let state = &mut MainState::new(ctx).unwrap();
-
-    ggez::event::run(ctx, state).unwrap();
+    let mut state = GameWrapper::new(ctx).unwrap();
+    loop {
+        if let GameWrapper::Quit = state {
+            break
+        }
+        state = state.run(ctx).unwrap();
+    }
 
     #[cfg(feature = "profiling")]
     PROFILER.lock().unwrap().stop().unwrap();

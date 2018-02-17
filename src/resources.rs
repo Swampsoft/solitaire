@@ -20,7 +20,7 @@ pub struct Resources {
     pub suite_images: HashMap<cards::Color, Vec<Image>>,
     pub dragon_images: HashMap<cards::Color, Image>,
     pub flower_image: Image,
-    pub button_images: HashMap<(cards::Color, button::State), Image>,
+    pub button_images: HashMap<(cards::Color, button::ButtonState), Image>,
     pub card_font: Font,
     pub ui_font: Font,
     pub text: HashMap<String, Text>,
@@ -94,15 +94,15 @@ impl Resources {
         flower_image.set_filter(graphics::FilterMode::Linear);
 
         let mut button_images = HashMap::new();
-        button_images.insert((cards::Color::Green, button::State::Active), Image::new(ctx, "/textures/solitaire/button_green_active.png")?);
-        button_images.insert((cards::Color::Green, button::State::Up), Image::new(ctx, "/textures/solitaire/button_green_up.png")?);
-        button_images.insert((cards::Color::Green, button::State::Down), Image::new(ctx, "/textures/solitaire/button_green_down.png")?);
-        button_images.insert((cards::Color::Red, button::State::Active), Image::new(ctx, "/textures/solitaire/button_red_active.png")?);
-        button_images.insert((cards::Color::Red, button::State::Up), Image::new(ctx, "/textures/solitaire/button_red_up.png")?);
-        button_images.insert((cards::Color::Red, button::State::Down), Image::new(ctx, "/textures/solitaire/button_red_down.png")?);
-        button_images.insert((cards::Color::White, button::State::Active), Image::new(ctx, "/textures/solitaire/button_white_active.png")?);
-        button_images.insert((cards::Color::White, button::State::Up), Image::new(ctx, "/textures/solitaire/button_white_up.png")?);
-        button_images.insert((cards::Color::White, button::State::Down), Image::new(ctx, "/textures/solitaire/button_white_down.png")?);
+        button_images.insert((cards::Color::Green, button::ButtonState::Active), Image::new(ctx, "/textures/solitaire/button_green_active.png")?);
+        button_images.insert((cards::Color::Green, button::ButtonState::Up), Image::new(ctx, "/textures/solitaire/button_green_up.png")?);
+        button_images.insert((cards::Color::Green, button::ButtonState::Down), Image::new(ctx, "/textures/solitaire/button_green_down.png")?);
+        button_images.insert((cards::Color::Red, button::ButtonState::Active), Image::new(ctx, "/textures/solitaire/button_red_active.png")?);
+        button_images.insert((cards::Color::Red, button::ButtonState::Up), Image::new(ctx, "/textures/solitaire/button_red_up.png")?);
+        button_images.insert((cards::Color::Red, button::ButtonState::Down), Image::new(ctx, "/textures/solitaire/button_red_down.png")?);
+        button_images.insert((cards::Color::White, button::ButtonState::Active), Image::new(ctx, "/textures/solitaire/button_white_active.png")?);
+        button_images.insert((cards::Color::White, button::ButtonState::Up), Image::new(ctx, "/textures/solitaire/button_white_up.png")?);
+        button_images.insert((cards::Color::White, button::ButtonState::Down), Image::new(ctx, "/textures/solitaire/button_white_down.png")?);
 
         let r = Resources {
             table_image: Image::new(ctx, "/textures/solitaire/table_large.png")?,
