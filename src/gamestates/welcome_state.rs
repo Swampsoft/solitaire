@@ -5,28 +5,27 @@ use ggez::graphics::Point2;
 use ggez::event::*;
 
 use super::GameWrapper;
-use super::game::Game;
 
 use resources::Resources;
 use table::Table;
 
 pub struct WelcomeState {
-    move_on: bool,
+    pub resources: Resources,
+    pub table: Table,
+    pub move_on: bool,
 }
 
-impl Game<WelcomeState> {
+impl WelcomeState {
     pub fn new(ctx: &mut Context) -> GameResult<Self> {
-        Ok(Game {
+        Ok(WelcomeState {
             resources: Resources::new(ctx)?,
             table: Table::new(),
-            state: WelcomeState {
-                move_on: false,
-            }
+            move_on: false,
         })
     }
 
     pub fn next_state(self) -> GameWrapper{
-        if self.state.move_on {
+        if self.move_on {
             GameWrapper::Game(self.into())
         } else {
             GameWrapper::Quit
@@ -34,7 +33,7 @@ impl Game<WelcomeState> {
     }
 }
 
-impl EventHandler for Game<WelcomeState> {
+impl EventHandler for WelcomeState {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         Ok(())
     }
@@ -51,7 +50,7 @@ impl EventHandler for Game<WelcomeState> {
     }
 
     fn mouse_button_down_event(&mut self, ctx: &mut Context, _button: MouseButton, _x: i32, _y: i32) {
-        self.state.move_on = true;
+        self.move_on = true;
         ctx.quit().unwrap();
     }
 }

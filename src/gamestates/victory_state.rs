@@ -3,18 +3,17 @@ use ggez::{Context, GameResult};
 use ggez::event::*;
 
 use super::GameWrapper;
-use super::game::Game;
 
 pub struct VictoryState {
 }
 
-impl Game<VictoryState> {
+impl VictoryState {
     pub fn next_state(self) -> GameWrapper{
         GameWrapper::Quit
     }
 }
 
-impl EventHandler for Game<VictoryState> {
+impl EventHandler for VictoryState {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         unimplemented!()
     }
