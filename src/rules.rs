@@ -13,6 +13,20 @@ pub enum StackRules {
 }
 
 impl StackRules {
+    pub fn accept_drag(&self, cards: &[Card]) -> bool {
+        match *self {
+            StackRules::Dragging => panic!("Dragged stack can't accept another drag."),
+            StackRules::Target |
+            StackRules::Flower => return false,
+            StackRules::Dragon => {
+                cards.iter().all(|c|c.is_faceup())
+            },
+            StackRules::Solitaire => {
+                is_valid_stack(cards)
+            },
+        }
+    }
+
     pub fn accept_drop(&self, top_card: Option<&Suite>, dropped: &Suite, n_cards: usize) -> bool {
         use self::Suite::*;
         match *self {
@@ -54,7 +68,7 @@ pub fn check_wincondition(table: &mut Table) -> bool {
     .all(|tc|tc.is_none())
 }
 
-pub fn valid_stack(cards: &[Card]) -> bool {
+pub fn is_valid_stack(cards: &[Card]) -> bool {
     use self::Suite::*;
     for (a, b) in cards.iter().zip(cards[1..].iter()) {
         match (a.suite(), b.suite()) {
@@ -71,14 +85,18 @@ pub fn global_rules(table: &mut Table) -> bool {
     let mut n_green_dragons = 0;
     let mut n_red_dragons = 0;
     let mut n_white_dragons = 0;
-    let mut auto_move = Vec::new();
+    let mut auto_move = None;
 
     let mut dirty = false;
 
+    'find_moves:
     for i in table.dragon_stacks().chain(table.solitaire_stacks()) {
         let top_suite = table.stacks[i].top_suite();
         match top_suite {
-            Some(&Flower) => auto_move.push((i, table.flower_stack())),
+            Some(&Flower) => {
+                auto_move = Some((i, table.flower_stack()));
+                break 'find_moves;
+            },
             Some(&Dragon(Color::Green)) => n_green_dragons += 1,
             Some(&Dragon(Color::Red)) => n_red_dragons += 1,
             Some(&Dragon(Color::White)) => n_white_dragons += 1,
@@ -89,7 +107,7 @@ pub fn global_rules(table: &mut Table) -> bool {
             match stack.top_suite() {
                 Some(&Number(i, _)) => i,
                 None => 0,
-                _ => panic!("Invalid table of target stack")
+                _ => panic!("Invalid card on target stack")
             }
         }).min().unwrap_or(0);
 
@@ -100,12 +118,12 @@ pub fn global_rules(table: &mut Table) -> bool {
                 (Some(&Number(i2, c2)), Some(&Number(i1, c1))) if c1 == c2 && i2 == i1 + 1 && i2 == i_min + 1=> {},
                 _ => continue
             }
-            auto_move.push((i, t));
-            break
+            auto_move = Some((i, t));
+            break 'find_moves;
         }
     }
 
-    for (s, t) in auto_move {
+    if let Some((s, t)) = auto_move {
         let card = table.stacks[s].pop().unwrap();
         table.stacks[t].push_card(card);
         dirty = true;
@@ -120,10 +138,22 @@ pub fn global_rules(table: &mut Table) -> bool {
             continue
         }
         match color {
-            Color::Green if n_green_dragons == 4 => table.buttons[b].set_state(button::ButtonState::Active),
-            Color::Red if n_red_dragons == 4 => table.buttons[b].set_state(button::ButtonState::Active),
-            Color::White if n_white_dragons == 4 => table.buttons[b].set_state(button::ButtonState::Active),
-            _ => table.buttons[b].set_state(button::ButtonState::Up)
+            Color::Green if n_green_dragons == 4 => {
+                dirty = dirty || table.buttons[b].state() != button::ButtonState::Active;
+                table.buttons[b].set_state(button::ButtonState::Active)
+            },
+            Color::Red if n_red_dragons == 4 => {
+                dirty = dirty || table.buttons[b].state() != button::ButtonState::Active;
+                table.buttons[b].set_state(button::ButtonState::Active)
+            }
+            Color::White if n_white_dragons == 4 => {
+                dirty = dirty || table.buttons[b].state() != button::ButtonState::Active;
+                table.buttons[b].set_state(button::ButtonState::Active)
+            },
+            _ => {
+                dirty = dirty || table.buttons[b].state() != button::ButtonState::Up;
+                table.buttons[b].set_state(button::ButtonState::Up)
+            }
         }
     }
 

@@ -7,7 +7,6 @@ use ggez::graphics::*;
 use bbox::BoundingBox;
 use resources::Resources;
 use rules::StackRules;
-use rules;
 
 #[derive(Debug)]
 pub struct CardStack {
@@ -119,60 +118,39 @@ impl CardStack {
             return None
         }
 
-        match self.rules {
-            StackRules::Target |
-            StackRules::Flower => return None,
-            StackRules::Dragon => {
-                match self.cards.last() {
-                    None => return None,
-                    Some(card) => if !card.is_faceup() { return None }
-                }
-                let card = self.cards.pop().unwrap();
-                let ds = CardStack {
-                    pos: card.get_pos(),
-                    rel: self.rel,
-                    bbox: card.get_bounds(),
-                    cards: vec!(card),
-                    rules: StackRules::Dragging,
-                };
-                self.update_bounds();
-                return Some(ds)
+        let mut idx = None;
+        for (i, card) in self.cards.iter().enumerate().rev() {
+            if card.is_hit(x, y) {
+                idx = Some(i);
+                break
             }
-            StackRules::Solitaire => {
-                let mut idx = None;
-                for (i, card) in self.cards.iter().enumerate().rev() {
-                    if card.is_hit(x, y) {
-                        idx = Some(i);
-                        break
-                    }
-                }
-                if idx.is_none() {
-                    return None
-                }
-                let idx = idx.unwrap();
-                if !rules::valid_stack(&self.cards[idx..]) {
-                    return None
-                }
-                let cards: Vec<_> = self.cards.drain(idx..).collect();
-                let mut ds = CardStack {
-                    pos: cards[0].get_pos(),
-                    rel: self.rel,
-                    bbox: BoundingBox::new_empty(),
-                    cards,
-                    rules: StackRules::Dragging,
-                };
-                ds.update_bounds();
-                self.update_bounds();
-                return Some(ds)
-            },
-            StackRules::Dragging => panic!("Attempting to drag from a dragged stack")
         }
+
+        let idx = match idx {
+            Some(idx) => idx,
+            None => return None,
+        };
+
+        if !self.rules.accept_drag(&self.cards[idx..]) {
+            return None
+        }
+
+        let cards: Vec<_> = self.cards.drain(idx..).collect();
+        let mut ds = CardStack {
+            pos: cards[0].get_pos(),
+            rel: self.rel,
+            bbox: BoundingBox::new_empty(),
+            cards,
+            rules: StackRules::Dragging,
+        };
+        ds.update_bounds();
+        self.update_bounds();
+        return Some(ds)
     }
 
-    pub fn accept(&self, other: &CardStack) -> bool {
-        // TODO: implement rules
+    pub fn accept_drop(&self, other: &CardStack) -> bool {
         if self.bbox.is_touching(&other.bbox) {
-            self.rules.accept_drop(self.cards.last().map(|c|c.suite()),
+            self.rules.accept_drop(self.top_suite(),
                                    other.cards.first().expect("Who's dragging an empty card stack around???").suite(),
                                    other.cards.len())
         } else {

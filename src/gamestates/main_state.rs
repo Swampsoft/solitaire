@@ -3,6 +3,7 @@ use ggez::{Context, GameResult};
 use ggez::event::*;
 use ggez::graphics;
 
+use button::ButtonState;
 use cards::Suite;
 use cardstack::CardStack;
 use rules;
@@ -26,8 +27,7 @@ impl Game<MainState> {
 impl EventHandler for Game<MainState>  {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         while self.state.dirty {
-            self.state.dirty = false;
-            rules::global_rules(&mut self.table);
+            self.state.dirty = rules::global_rules(&mut self.table);
         }
 
         if rules::check_wincondition(&mut self.table) {
@@ -64,16 +64,18 @@ impl EventHandler for Game<MainState>  {
             }
         }
         let mut moves = Vec::new();
-        for button in &self.table.buttons {
-            if button.accept_click(x as f32, y as f32) {
-                let t = self.table.find_dragon_target(button.color()).unwrap();
+        for b in 0..self.table.buttons.len() {
+            if self.table.buttons[b].accept_click(x as f32, y as f32) {
+                let t = self.table.find_dragon_target(self.table.buttons[b].color()).unwrap();
                 for i in self.table.dragon_and_solitaire_stacks() {
                     if let Some(&Suite::Dragon(color)) = self.table.get_stack(i).top_suite() {
-                        if color == button.color() {
+                        if color == self.table.buttons[b].color() {
                             moves.push((i, t));
                         }
                     }
                 }
+                self.table.buttons[b].set_state(ButtonState::Down);
+                self.state.dirty = true;
             }
         }
         for (s, t) in moves {
@@ -89,7 +91,7 @@ impl EventHandler for Game<MainState>  {
                 if i == self.state.dragsource {
                     continue
                 }
-                if stack.accept(&dstack) {
+                if stack.accept_drop(&dstack) {
                     stack.push(dstack);
                     self.state.dirty = true;
                     self.resources.place_sound.play().unwrap();
