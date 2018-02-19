@@ -1,12 +1,12 @@
 
-use std::time;
-
 use ggez::{Context, GameResult};
 use ggez::graphics;
 use ggez::graphics::Point2;
 use ggez::event::*;
 
 use super::GameWrapper;
+use super::main_state::MainState;
+use super::victory_state::VictoryState;
 
 use resources::Resources;
 use table::Table;
@@ -58,5 +58,25 @@ impl EventHandler for WelcomeState {
     fn mouse_button_down_event(&mut self, ctx: &mut Context, _button: MouseButton, _x: i32, _y: i32) {
         self.move_on = true;
         ctx.quit().unwrap();
+    }
+}
+
+impl From<VictoryState> for WelcomeState {
+    fn from(old: VictoryState) -> WelcomeState {
+        WelcomeState {
+            resources: old.resources,
+            table: old.table,
+            move_on: false,
+        }
+    }
+}
+
+impl From<MainState> for WelcomeState {
+    fn from(old: MainState) -> WelcomeState {
+        WelcomeState {
+            resources: old.resources,
+            table: old.table,
+            move_on: false,
+        }
     }
 }

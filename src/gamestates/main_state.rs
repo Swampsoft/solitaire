@@ -4,8 +4,6 @@ use ggez::event::*;
 use ggez::graphics;
 use ggez::timer;
 
-use button::ButtonState;
-use cards::Suite;
 use cardstack::CardStack;
 use resources::Resources;
 use rules;
@@ -15,15 +13,19 @@ use super::GameWrapper;
 use super::welcome_state::WelcomeState;
 
 pub struct MainState {
-    resources: Resources,
-    table: Table,
+    pub resources: Resources,
+    pub table: Table,
     dragging: Option<CardStack>,
     dragsource: usize,
 }
 
 impl MainState {
     pub fn next_state(self) -> GameWrapper{
-        GameWrapper::Quit
+        if rules::check_wincondition(&self.table) {
+            GameWrapper::Victory(self.into())
+        } else {
+            GameWrapper::Welcome(self.into())
+        }
     }
 }
 

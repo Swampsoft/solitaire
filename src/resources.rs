@@ -12,10 +12,10 @@ use cards;
 #[derive(Copy, Clone)]
 pub enum Sounds {
     None,
-    Pickup,
+    //Pickup,
     Place,
     Sweep,
-    Deal,
+    //Deal,
 }
 
 pub struct Resources {
@@ -148,9 +148,9 @@ impl Resources {
     pub fn play_sound(&self, sound: Sounds) {
         match sound {
             Sounds::None => return,
-            Sounds::Pickup => self.pickup_sound.play(),
+            //Sounds::Pickup => self.pickup_sound.play(),
             Sounds::Place => self.place_sound.play(),
-            Sounds::Deal => self.deal_sound.play(),
+            //Sounds::Deal => self.deal_sound.play(),
             Sounds::Sweep => self.sweep_sound.play(),
         }.unwrap();
     }

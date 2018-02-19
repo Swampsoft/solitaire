@@ -1,4 +1,3 @@
-mod game;
 mod main_state;
 mod victory_state;
 mod welcome_state;

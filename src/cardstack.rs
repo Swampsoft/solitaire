@@ -111,10 +111,6 @@ impl CardStack {
         }
     }
 
-    pub fn get_pos(&self) -> &Point2 {
-        &self.pos
-    }
-
     pub fn move_pos(&mut self, dx: f32, dy: f32) {
         self.pos.x += dx;
         self.pos.y += dy;

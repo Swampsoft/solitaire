@@ -1,6 +1,5 @@
 
 use std::cmp;
-use std::collections::BinaryHeap;
 use std::time;
 
 use ggez::{Context, GameResult};

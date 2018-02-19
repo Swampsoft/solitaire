@@ -62,7 +62,7 @@ impl StackRules {
     }
 }
 
-pub fn check_wincondition(table: &mut Table) -> bool {
+pub fn check_wincondition(table: &Table) -> bool {
     table.iter_solitaire_stacks()
     .map(|s|s.top_card())
     .all(|tc|tc.is_none())
