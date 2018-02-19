@@ -1,7 +1,8 @@
 
 use std::iter::Chain;
-use std::slice::{Iter, IterMut};
 use std::ops::Range;
+use std::slice::{Iter, IterMut};
+use std::time;
 
 use rand::{thread_rng, Rng};
 
@@ -9,14 +10,20 @@ use ggez::{Context, GameResult};
 use ggez::graphics;
 use ggez::graphics::Point2;
 
+use animation::{Animation, AnimationHandler};
 use button::{Button, ButtonState};
 use cardstack::CardStack;
 use cards::{Card, Color, Suite};
 use resources::Resources;
+use rules;
 
 pub struct Table {
-    pub stacks: Vec<CardStack>,
-    pub buttons: Vec<Button>,
+    dirty: bool,
+    stacks: Vec<CardStack>,
+    buttons: Vec<Button>,
+    animations: AnimationHandler,
+    deal_pending: bool,
+    animove: Option<(usize, usize)>,
 }
 
 impl Table {
@@ -46,8 +53,12 @@ impl Table {
         };
 
         Table {
+            dirty: true,
             buttons,
             stacks,
+            animations: AnimationHandler::new(),
+            deal_pending: false,
+            animove: None,
         }
     }
 
@@ -88,8 +99,33 @@ impl Table {
         &self.stacks[i]
     }
 
-    pub fn get_stack_mut(&mut self, i: usize) -> &mut CardStack {
+    /*pub fn get_stack_mut(&mut self, i: usize) -> &mut CardStack {
         &mut self.stacks[i]
+    }*/
+
+    pub fn push_stack(&mut self, i: usize, substack: CardStack) {
+        self.stacks[i].push(substack);
+        self.dirty = true;
+    }
+
+    pub fn n_stacks(&self)-> usize {
+        self.stacks.len()
+    }
+
+    pub fn get_button(&self, i: usize) -> &Button {
+        &self.buttons[i]
+    }
+
+    pub fn set_button(&mut self, i: usize, state: ButtonState) {
+        let button = &mut self.buttons[i];
+        if button.state() != state {
+            self.dirty = true;
+        }
+        button.set_state(state);
+    }
+
+    pub fn n_buttons(&self) -> usize {
+        self.buttons.len()
     }
 
     pub fn new_game(&mut self) {
@@ -120,8 +156,40 @@ impl Table {
 
         thread_rng().shuffle(&mut cards);
 
-        for (card, s) in cards.drain(..).zip(self.solitaire_stacks().cycle()) {
+        /*for (card, s) in cards.drain(..).zip(self.solitaire_stacks().cycle()) {
             self.stacks[s].push_card(card);
+        }*/
+
+        let s = self.flower_stack();
+        for card in cards.drain(..) {
+            self.stacks[s].push_card(card);
+        }
+    }
+
+    pub fn set_dirty(&mut self) {
+        self.dirty = true;
+    }
+
+    pub fn game_enabled(&self) -> bool {
+        !self.animations.busy()
+    }
+
+    pub fn update(&mut self, t_now: time::Duration) {
+        if self.deal_pending {
+            self.deal_pending = false;
+            self.schedule_deal(t_now);
+        }
+        if self.animove.is_some() {
+            self.schedule_move(t_now);
+        }
+        for (card, t) in self.animations.update(t_now) {
+            // see if the animation engine returned any cards to the table...
+            self.stacks[t].push_card(card);
+            self.set_dirty();
+        }
+
+        while self.dirty && self.game_enabled() {
+            self.dirty = rules::global_rules(self);
         }
     }
 
@@ -136,7 +204,32 @@ impl Table {
             stack.draw(ctx, resources)?;
         }
 
+        self.animations.draw(ctx, resources)?;
+
         Ok(())
+    }
+
+    pub fn handle_click(&mut self, x: f32, y:f32) {
+        let mut moves = Vec::new();
+        for b in 0..self.n_buttons() {
+            if self.buttons[b].accept_click(x, y) {
+                let t = self.find_dragon_target(self.buttons[b].color()).unwrap();
+                for i in self.dragon_and_solitaire_stacks() {
+                    if let Some(&Suite::Dragon(color)) = self.get_stack(i).top_suite() {
+                        if color == self.buttons[b].color() {
+                            moves.push((i, t));
+                        }
+                    }
+                }
+                self.buttons[b].set_state(ButtonState::Down);
+                self.set_dirty();
+            }
+        }
+        for (s, t) in moves {
+            let mut card = self.stacks[s].pop().unwrap();
+            card.set_faceup(false);
+            self.stacks[t].push_card(card);
+        }
     }
 
     pub fn find_dragon_target(&self, color: Color) -> Option<usize> {
@@ -149,5 +242,52 @@ impl Table {
             }
         }
         target
+    }
+
+    pub fn deal(&mut self) {
+        self.deal_pending = true
+    }
+
+    pub fn schedule_deal(&mut self, mut t_start: time::Duration) {
+        let s = self.flower_stack();
+        assert_eq!(self.stacks[s].len(), 40);
+
+        let mut virtual_stacks = vec![0; self.stacks.len()];
+
+        let mut t_stop;
+
+        for t in self.solitaire_stacks().cycle() {
+            let card = match self.stacks[s].pop() {
+                Some(card) => card,
+                None => break,
+            };
+
+            let n = virtual_stacks[t];
+            let dest = self.stacks[t].calc_card_pos(n);
+            virtual_stacks[t] += 1;  // push virtual cards on virtual stack
+
+            t_stop = t_start + time::Duration::new(0, 100000000);
+
+            let anim = Animation::new(card, dest, t_start, t_stop, t);
+            self.animations.add(anim);
+
+            t_start = t_stop;
+        }
+    }
+
+    pub fn move_card(&mut self, src: usize, dst: usize) {
+        self.animove = Some((src, dst));
+    }
+
+    pub fn schedule_move(&mut self, mut t_start: time::Duration) {
+        if let Some((src, dst)) = self.animove.take() {
+            let card = self.stacks[src].pop().unwrap();
+            let dest = self.stacks[dst].calc_new_pos();
+
+            let t_stop = t_start + time::Duration::new(0, 100000000);
+
+            let anim = Animation::new(card, dest, t_start, t_stop, dst);
+            self.animations.add(anim);
+        }
     }
 }

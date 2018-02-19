@@ -22,7 +22,7 @@ impl CardStack {
         let (x, y) = (x as f32, y as f32);
         CardStack {
             pos: Point2::new(x, y),
-            rel: Vector2::new(0.5, -1.0),
+            rel: Vector2::new(0.1, -0.25),
             bbox: BoundingBox::new(x, x + cards::WIDTH, y, y + cards::HEIGHT),
             cards: Vec::new(),
             rules: StackRules::Target,
@@ -33,7 +33,7 @@ impl CardStack {
         let (x, y) = (x as f32, y as f32);
         CardStack {
             pos: Point2::new(x, y),
-            rel: Vector2::new(0.5, -1.0),
+            rel: Vector2::new(0.1, -0.25),
             bbox: BoundingBox::new(x, x + cards::WIDTH, y, y + cards::HEIGHT),
             cards: Vec::new(),
             rules: StackRules::Dragon,
@@ -55,7 +55,7 @@ impl CardStack {
         let (x, y) = (x as f32, y as f32);
         CardStack {
             pos: Point2::new(x, y),
-            rel: Vector2::new(0.5, -1.0),
+            rel: Vector2::new(0.1, -0.25),
             bbox: BoundingBox::new(x, x + cards::WIDTH, y, y + cards::HEIGHT),
             cards: Vec::new(),
             rules: StackRules::Flower,
@@ -67,8 +67,20 @@ impl CardStack {
         self.update_bounds();
     }
 
+    pub fn len(&self) -> usize {
+        self.cards.len()
+    }
+
+    pub fn calc_card_pos(&self, i: usize) -> Point2 {
+        self.pos + self.rel * i as f32
+    }
+
+    pub fn calc_new_pos(&self) -> Point2 {
+        self.calc_card_pos(self.cards.len())
+    }
+
     pub fn push_card(&mut self, mut card: Card) {
-        card.set_pos(self.pos + self.rel * self.cards.len() as f32);
+        card.set_pos(self.calc_new_pos());
         self.bbox.merge(&card.get_bounds());
         self.cards.push(card);
     }
@@ -97,6 +109,10 @@ impl CardStack {
         for card in &self.cards {
             self.bbox.merge(&card.get_bounds());
         }
+    }
+
+    pub fn get_pos(&self) -> &Point2 {
+        &self.pos
     }
 
     pub fn move_pos(&mut self, dx: f32, dy: f32) {

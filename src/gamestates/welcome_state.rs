@@ -1,4 +1,6 @@
 
+use std::time;
+
 use ggez::{Context, GameResult};
 use ggez::graphics;
 use ggez::graphics::Point2;
@@ -17,9 +19,11 @@ pub struct WelcomeState {
 
 impl WelcomeState {
     pub fn new(ctx: &mut Context) -> GameResult<Self> {
+        let mut table = Table::new();
+        table.new_game();
         Ok(WelcomeState {
             resources: Resources::new(ctx)?,
-            table: Table::new(),
+            table: table,
             move_on: false,
         })
     }
@@ -39,8 +43,10 @@ impl EventHandler for WelcomeState {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         self.table.draw(ctx, &self.resources)?;
 
+        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         let text = self.resources.get_text(ctx, "Click anywhere to start a new game.")?;
         let pos = Point2::new(640.0 - text.width() as f32 / 2.0, 403.0 - text.height() as f32 / 2.0);
         graphics::draw(ctx, text,pos, 0.0)?;

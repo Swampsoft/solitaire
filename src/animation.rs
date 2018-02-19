@@ -28,10 +28,10 @@ impl Path {
     }
 }
 
-struct Animation {
+pub struct Animation {
     card: Card,
 
-    dest_stack: Option<usize>,
+    dest_stack: usize,
 
     path: Path,
     t_start: time::Duration,
@@ -39,7 +39,7 @@ struct Animation {
 }
 
 impl Animation {
-    fn new(card: Card, dest: Point2, t_start: time::Duration, t_stop: time::Duration, dest_stack: Option<usize>) -> Animation {
+    pub fn new(card: Card, dest: Point2, t_start: time::Duration, t_stop: time::Duration, dest_stack: usize) -> Animation {
         let dt = t_stop - t_start;
         let dur = dt.as_secs() as f32 + dt.subsec_nanos() as f32 * 1e-9;
         let path = Path::new_linear(card.get_pos(), dest, dur);
@@ -52,50 +52,72 @@ impl Animation {
         }
     }
 
-    fn update(&mut self, t_now: time::Duration) {
-        let dt = self.t_stop - t_now;
-        let t = dt.as_secs() as f32 + dt.subsec_nanos() as f32 * 1e-9;
-        self.card.set_pos(self.path.pos(t));
+    fn update(&mut self, t_now: time::Duration) -> bool {
+        match self.t_stop.checked_sub(t_now) {
+            Some(dt) => {
+                let t = dt.as_secs() as f32 + dt.subsec_nanos() as f32 * 1e-9;
+                self.card.set_pos(self.path.pos(t));
+                true
+            },
+            None => {
+                self.card.set_pos(self.path.pos(0.0));
+                false
+            }
+        }
     }
 }
 
-struct AnimationHandler {
+pub struct AnimationHandler {
     active_animations: Vec<Animation>,
-    pending_animations: BinaryHeap<Animation>,
-    done_animations: Vec<usize>,
+    pending_animations: Vec<Animation>,
 }
 
 impl AnimationHandler {
-    fn new() -> AnimationHandler {
+    pub fn new() -> AnimationHandler {
         AnimationHandler {
             active_animations: Vec::new(),
-            pending_animations: BinaryHeap::new(),
-            done_animations: Vec::new(),
+            pending_animations: Vec::new(),
         }
     }
 
-    fn update(&mut self, t_now: time::Duration) {
-        self.done_animations.sort_unstable();
-        for a in self.done_animations.drain(..).rev() {
-            self.active_animations.swap_remove(a);
-        }
+    pub fn busy(&self) -> bool {
+        self.active_animations.len() > 0 || self.pending_animations.len() > 0
+    }
 
-        loop {
-            match self.pending_animations.peek() {
-                None => break,
-                Some(a) if a.t_start > t_now => break,
-                Some(_) => {}
+    pub fn add(&mut self, animation: Animation) {
+        self.pending_animations.push(animation);
+    }
+
+    pub fn update(&mut self, t_now: time::Duration) -> Vec<(Card, usize)> {
+        let mut start_animations = Vec::new();
+        for (i, anim) in self.pending_animations.iter().enumerate() {
+            if anim.t_start <= t_now {
+                start_animations.push(i);
             }
-            self.active_animations.push(self.pending_animations.pop().unwrap());
         }
 
-        for animation in &mut self.active_animations {
-            animation.update(t_now);
+        for a in start_animations.drain(..).rev() {
+            let anim = self.pending_animations.remove(a);
+            self.active_animations.push(anim);
         }
+
+        let mut done_animations = Vec::new();
+        for (i, animation) in self.active_animations.iter_mut().enumerate() {
+            if !animation.update(t_now) {
+                done_animations.push(i);
+            }
+        }
+
+        let mut result = Vec::new();
+        for a in done_animations.drain(..).rev() {
+            let dead_anim = self.active_animations.swap_remove(a);
+            result.push((dead_anim.card, dead_anim.dest_stack))
+        }
+        result
     }
 
     pub fn draw(&self, ctx: &mut Context, res: &Resources) -> GameResult<()> {
-        for animation in self.pending_animations.iter().chain(self.active_animations.iter()) {
+        for animation in self.pending_animations.iter().rev().chain(self.active_animations.iter()) {
             animation.card.draw(ctx, res)?;
         }
         Ok(())

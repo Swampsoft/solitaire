@@ -91,7 +91,7 @@ pub fn global_rules(table: &mut Table) -> bool {
 
     'find_moves:
     for i in table.dragon_stacks().chain(table.solitaire_stacks()) {
-        let top_suite = table.stacks[i].top_suite();
+        let top_suite = table.get_stack(i).top_suite();
         match top_suite {
             Some(&Flower) => {
                 auto_move = Some((i, table.flower_stack()));
@@ -112,7 +112,7 @@ pub fn global_rules(table: &mut Table) -> bool {
         }).min().unwrap_or(0);
 
         for t in table.target_stacks() {
-            let target_suite = table.stacks[t].top_suite();
+            let target_suite = table.get_stack(t).top_suite();
             match (top_suite, target_suite) {
                 (Some(&Number(1, _)), None) => {},
                 (Some(&Number(i2, c2)), Some(&Number(i1, c1))) if c1 == c2 && i2 == i1 + 1 && i2 == i_min + 1=> {},
@@ -123,38 +123,25 @@ pub fn global_rules(table: &mut Table) -> bool {
         }
     }
 
-    if let Some((s, t)) = auto_move {
-        let card = table.stacks[s].pop().unwrap();
-        table.stacks[t].push_card(card);
-        dirty = true;
-    }
-
-    for b in 0..table.buttons.len() {
-        if let button::ButtonState::Down = table.buttons[b].state() {
+    for b in 0..table.n_buttons() {
+        if let button::ButtonState::Down = table.get_button(b).state() {
             continue
         }
-        let color = table.buttons[b].color();
+        let color = table.get_button(b).color();
         if table.find_dragon_target(color).is_none() {
             continue
         }
         match color {
-            Color::Green if n_green_dragons == 4 => {
-                dirty = dirty || table.buttons[b].state() != button::ButtonState::Active;
-                table.buttons[b].set_state(button::ButtonState::Active)
-            },
-            Color::Red if n_red_dragons == 4 => {
-                dirty = dirty || table.buttons[b].state() != button::ButtonState::Active;
-                table.buttons[b].set_state(button::ButtonState::Active)
-            }
-            Color::White if n_white_dragons == 4 => {
-                dirty = dirty || table.buttons[b].state() != button::ButtonState::Active;
-                table.buttons[b].set_state(button::ButtonState::Active)
-            },
-            _ => {
-                dirty = dirty || table.buttons[b].state() != button::ButtonState::Up;
-                table.buttons[b].set_state(button::ButtonState::Up)
-            }
+            Color::Green if n_green_dragons == 4 => table.set_button(b, button::ButtonState::Active),
+            Color::Red if n_red_dragons == 4 => table.set_button(b, button::ButtonState::Active),
+            Color::White if n_white_dragons == 4 => table.set_button(b, button::ButtonState::Active),
+            _ => table.set_button(b, button::ButtonState::Up)
         }
+    }
+
+    if let Some((s, t)) = auto_move {
+        table.move_card(s, t);
+        dirty = false;
     }
 
     dirty
