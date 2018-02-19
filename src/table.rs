@@ -1,5 +1,6 @@
 
 use std::iter::Chain;
+use std::mem;
 use std::ops::Range;
 use std::slice::{Iter, IterMut};
 use std::time;
@@ -28,7 +29,7 @@ pub struct Table {
     buttons: Vec<Button>,
     animations: AnimationHandler,
     deal_pending: bool,
-    animove: Option<(usize, usize)>,
+    animove: Vec<(usize, usize)>,
 }
 
 impl Table {
@@ -63,7 +64,7 @@ impl Table {
             stacks,
             animations: AnimationHandler::new(),
             deal_pending: false,
-            animove: None,
+            animove: Vec::new(),
         }
     }
 
@@ -184,9 +185,9 @@ impl Table {
             self.deal_pending = false;
             self.schedule_deal(t_now);
         }
-        if self.animove.is_some() {
-            self.schedule_move(t_now);
-        }
+
+        self.schedule_moves(t_now);
+
         for (card, t) in self.animations.update(t_now, res) {
             // see if the animation engine returned any cards to the table...
             self.stacks[t].push_card(card);
@@ -233,7 +234,9 @@ impl Table {
         for (s, t) in moves {
             let mut card = self.stacks[s].pop().unwrap();
             card.set_faceup(false);
-            self.stacks[t].push_card(card);
+            self.stacks[s].push_card(card);
+            self.move_card(s, t);
+            //self.stacks[t].push_card(card);
         }
     }
 
@@ -281,18 +284,20 @@ impl Table {
     }
 
     pub fn move_card(&mut self, src: usize, dst: usize) {
-        self.animove = Some((src, dst));
+        self.animove.push((src, dst));
     }
 
-    pub fn schedule_move(&mut self, t_start: time::Duration) {
-        if let Some((src, dst)) = self.animove.take() {
+    pub fn schedule_moves(&mut self, t_start: time::Duration) {
+        let mut sound = Sounds::Sweep;
+        for (src, dst) in mem::replace(&mut self.animove, Vec::new()) {
             let card = self.stacks[src].pop().unwrap();
             let dest = self.stacks[dst].calc_new_pos();
 
             let t_stop = t_start + time::Duration::new(0, ANIMATION_DURATION);
 
-            let anim = Animation::new(card, dest, t_start, t_stop, dst, Sounds::Sweep, Sounds::None);
+            let anim = Animation::new(card, dest, t_start, t_stop, dst, sound, Sounds::None);
             self.animations.add(anim);
+            sound = Sounds::None;  // play only one sound
         }
     }
 }

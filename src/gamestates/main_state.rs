@@ -75,6 +75,7 @@ impl EventHandler for MainState  {
                 return
             }
         }
+
         self.table.handle_click(x as f32, y as f32);
     }
 

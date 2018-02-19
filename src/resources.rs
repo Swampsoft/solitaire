@@ -9,7 +9,7 @@ use ggez::*;
 use button;
 use cards;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Sounds {
     None,
     //Pickup,
