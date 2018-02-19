@@ -7,6 +7,7 @@ extern crate rand;
 
 mod gamestates;
 
+mod animation;
 mod bbox;
 mod button;
 mod cards;
