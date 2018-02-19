@@ -7,7 +7,7 @@ use ggez::{Context, GameResult};
 use ggez::graphics::{Point2, Vector2};
 
 use cards::Card;
-use resources::Resources;
+use resources::{Resources, Sounds};
 
 enum Path {
     Linear{dest: Point2, vel: Vector2}
@@ -36,10 +36,14 @@ pub struct Animation {
     path: Path,
     t_start: time::Duration,
     t_stop: time::Duration,
+
+    sound_start: Sounds,
+    sound_stop: Sounds,
 }
 
 impl Animation {
-    pub fn new(card: Card, dest: Point2, t_start: time::Duration, t_stop: time::Duration, dest_stack: usize) -> Animation {
+    pub fn new(card: Card, dest: Point2, t_start: time::Duration, t_stop: time::Duration,
+               dest_stack: usize, sound_start: Sounds, sound_stop: Sounds) -> Animation {
         let dt = t_stop - t_start;
         let dur = dt.as_secs() as f32 + dt.subsec_nanos() as f32 * 1e-9;
         let path = Path::new_linear(card.get_pos(), dest, dur);
@@ -49,6 +53,8 @@ impl Animation {
             t_stop,
             dest_stack,
             path,
+            sound_start,
+            sound_stop,
         }
     }
 
@@ -88,7 +94,7 @@ impl AnimationHandler {
         self.pending_animations.push(animation);
     }
 
-    pub fn update(&mut self, t_now: time::Duration) -> Vec<(Card, usize)> {
+    pub fn update(&mut self, t_now: time::Duration, res: &mut Resources) -> Vec<(Card, usize)> {
         let mut start_animations = Vec::new();
         for (i, anim) in self.pending_animations.iter().enumerate() {
             if anim.t_start <= t_now {
@@ -98,6 +104,7 @@ impl AnimationHandler {
 
         for a in start_animations.drain(..).rev() {
             let anim = self.pending_animations.remove(a);
+            res.play_sound(anim.sound_start);
             self.active_animations.push(anim);
         }
 
@@ -111,6 +118,7 @@ impl AnimationHandler {
         let mut result = Vec::new();
         for a in done_animations.drain(..).rev() {
             let dead_anim = self.active_animations.swap_remove(a);
+            res.play_sound(dead_anim.sound_stop);
             result.push((dead_anim.card, dead_anim.dest_stack))
         }
         result

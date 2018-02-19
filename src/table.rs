@@ -14,8 +14,13 @@ use animation::{Animation, AnimationHandler};
 use button::{Button, ButtonState};
 use cardstack::CardStack;
 use cards::{Card, Color, Suite};
-use resources::Resources;
+use resources::{Resources, Sounds};
 use rules;
+
+
+const ANIMATION_DURATION: u32 =  200_000_000;  // nano seconds
+const DEAL_INTERVAL: u32 = 100_000_000;
+
 
 pub struct Table {
     dirty: bool,
@@ -174,7 +179,7 @@ impl Table {
         !self.animations.busy()
     }
 
-    pub fn update(&mut self, t_now: time::Duration) {
+    pub fn update(&mut self, t_now: time::Duration, res: &mut Resources) {
         if self.deal_pending {
             self.deal_pending = false;
             self.schedule_deal(t_now);
@@ -182,7 +187,7 @@ impl Table {
         if self.animove.is_some() {
             self.schedule_move(t_now);
         }
-        for (card, t) in self.animations.update(t_now) {
+        for (card, t) in self.animations.update(t_now, res) {
             // see if the animation engine returned any cards to the table...
             self.stacks[t].push_card(card);
             self.set_dirty();
@@ -266,12 +271,12 @@ impl Table {
             let dest = self.stacks[t].calc_card_pos(n);
             virtual_stacks[t] += 1;  // push virtual cards on virtual stack
 
-            t_stop = t_start + time::Duration::new(0, 100000000);
+            t_stop = t_start + time::Duration::new(0, ANIMATION_DURATION);
 
-            let anim = Animation::new(card, dest, t_start, t_stop, t);
+            let anim = Animation::new(card, dest, t_start, t_stop, t, Sounds::Place, Sounds::None);
             self.animations.add(anim);
 
-            t_start = t_stop;
+            t_start = t_start + time::Duration::new(0, DEAL_INTERVAL);
         }
     }
 
@@ -279,14 +284,14 @@ impl Table {
         self.animove = Some((src, dst));
     }
 
-    pub fn schedule_move(&mut self, mut t_start: time::Duration) {
+    pub fn schedule_move(&mut self, t_start: time::Duration) {
         if let Some((src, dst)) = self.animove.take() {
             let card = self.stacks[src].pop().unwrap();
             let dest = self.stacks[dst].calc_new_pos();
 
-            let t_stop = t_start + time::Duration::new(0, 100000000);
+            let t_stop = t_start + time::Duration::new(0, ANIMATION_DURATION);
 
-            let anim = Animation::new(card, dest, t_start, t_stop, dst);
+            let anim = Animation::new(card, dest, t_start, t_stop, dst, Sounds::Sweep, Sounds::None);
             self.animations.add(anim);
         }
     }

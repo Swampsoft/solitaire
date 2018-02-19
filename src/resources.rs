@@ -9,6 +9,15 @@ use ggez::*;
 use button;
 use cards;
 
+#[derive(Copy, Clone)]
+pub enum Sounds {
+    None,
+    Pickup,
+    Place,
+    Sweep,
+    Deal,
+}
+
 pub struct Resources {
     pub table_image: Image,
     pub card_front: Image,
@@ -134,5 +143,15 @@ impl Resources {
             Entry::Vacant(v) => v.insert(Text::new(ctx, s, &self.ui_font)?)
         };
         Ok(text)
+    }
+
+    pub fn play_sound(&self, sound: Sounds) {
+        match sound {
+            Sounds::None => return,
+            Sounds::Pickup => self.pickup_sound.play(),
+            Sounds::Place => self.place_sound.play(),
+            Sounds::Deal => self.deal_sound.play(),
+            Sounds::Sweep => self.sweep_sound.play(),
+        }.unwrap();
     }
 }

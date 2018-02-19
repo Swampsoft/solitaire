@@ -35,7 +35,7 @@ impl EventHandler for MainState  {
         }
 
         let t = timer::get_time_since_start(ctx);
-        self.table.update(t);
+        self.table.update(t, &mut self.resources);
 
         if !self.table.game_enabled() {
             return Ok(())
