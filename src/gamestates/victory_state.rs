@@ -1,5 +1,3 @@
-use std::time;
-
 use ggez::{Context, GameResult};
 use ggez::event::*;
 use ggez::graphics;

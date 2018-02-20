@@ -11,7 +11,6 @@ use table::Table;
 
 use super::GameWrapper;
 use super::welcome_state::WelcomeState;
-use super::giveup_state::GiveupState;
 
 pub struct MainState {
     pub resources: Resources,

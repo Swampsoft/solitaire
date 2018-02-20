@@ -6,7 +6,6 @@ use ggez::event::*;
 use ggez::timer;
 
 use super::GameWrapper;
-use super::main_state::MainState;
 use super::victory_state::VictoryState;
 use super::giveup_state::GiveupState;
 

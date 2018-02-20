@@ -1,9 +1,6 @@
-use std::time;
-
 use ggez::{Context, GameResult};
 use ggez::event::*;
 use ggez::graphics;
-use ggez::graphics::Point2;
 use ggez::timer;
 
 use resources::Resources;

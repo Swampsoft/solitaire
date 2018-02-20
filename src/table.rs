@@ -375,7 +375,7 @@ impl Table {
 
         let n_cards = self.stacks.iter().map(|stack|stack.len()).sum();
 
-        for i in 0..n_cards {
+        for _ in 0..n_cards {
             let card;
             loop  {
                 match self.stacks[s].pop() {
@@ -404,12 +404,12 @@ impl Table {
         self.giveup_pending = true
     }
 
-    pub fn schedule_giveup(&mut self, mut t_start: time::Duration) {
+    pub fn schedule_giveup(&mut self, t_start: time::Duration) {
         let mut sound = Sounds::Sweep;
         for stack in self.stacks.iter_mut() {
             while let Some(card) = stack.pop() {
 
-                let mut direction = (card.get_pos() - Point2::new(640.0, 400.0));
+                let mut direction = card.get_pos() - Point2::new(640.0, 400.0);
                 let dist = direction.norm();
                 direction = direction / dist;
 
