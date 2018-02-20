@@ -26,9 +26,11 @@ const DEAL_INTERVAL: u32 = 100_000_000;
 pub struct Table {
     dirty: bool,
     stacks: Vec<CardStack>,
+    offscreen_stack: CardStack,
     buttons: Vec<Button>,
     animations: AnimationHandler,
     deal_pending: bool,
+    drop_pending: bool,
     animove: Vec<(usize, usize)>,
 }
 
@@ -58,12 +60,32 @@ impl Table {
             CardStack::new_rose(614, 20),
         };
 
+        // find offscreen position that's visually directly above the flower stack
+        // TODO: this could be computed, but i'm to lazy right now
+
+        let mut vcard = Card::new(Suite::Flower);
+        let mut pos = Point2::new(0.0, 0.0);
+        for i in 40.. {
+            pos = stacks.last().unwrap().calc_card_pos(i);
+            vcard.set_pos(pos);
+            if vcard.get_bounds().bottom() < 0.0 ||
+                vcard.get_bounds().left() < 0.0 ||
+                vcard.get_bounds().top() > 806.0 ||
+                vcard.get_bounds().right() > 1280.0 {
+                break
+            }
+        }
+
+        let offscreen_stack = CardStack::new_buffer(pos.x as i32, pos.y as i32);
+
         Table {
             dirty: true,
             buttons,
             stacks,
+            offscreen_stack,
             animations: AnimationHandler::new(),
             deal_pending: false,
+            drop_pending: false,
             animove: Vec::new(),
         }
     }
@@ -166,10 +188,10 @@ impl Table {
             self.stacks[s].push_card(card);
         }*/
 
-        let s = self.flower_stack();
         for card in cards.drain(..) {
-            self.stacks[s].push_card(card);
+            self.offscreen_stack.push_card(card);
         }
+        self.drop_pending = true;
     }
 
     pub fn set_dirty(&mut self) {
@@ -181,7 +203,12 @@ impl Table {
     }
 
     pub fn update(&mut self, t_now: time::Duration, res: &mut Resources) {
-        if self.deal_pending {
+        if self.drop_pending && !self.animations.busy() {
+            self.drop_pending = false;
+            self.schedule_drop(t_now);
+        }
+
+        if self.deal_pending && !self.animations.busy() {
             self.deal_pending = false;
             self.schedule_deal(t_now);
         }
@@ -235,8 +262,7 @@ impl Table {
             let mut card = self.stacks[s].pop().unwrap();
             card.set_faceup(false);
             self.stacks[s].push_card(card);
-            self.move_card(s, t);
-            //self.stacks[t].push_card(card);
+            self.animate_move(s, t);
         }
     }
 
@@ -252,7 +278,32 @@ impl Table {
         target
     }
 
-    pub fn deal(&mut self) {
+    pub fn animate_drop(&mut self) {
+        self.drop_pending = true
+    }
+
+    pub fn schedule_drop(&mut self, mut t_start: time::Duration) {
+        let t = self.flower_stack();
+        let mut n = 0;
+        let mut t_stop;
+        while let Some(card) = self.offscreen_stack.pop() {
+            let sound = if n % 10 == 0 {  // skip some sounds so we don't overflow the buffer
+                Sounds::Pickup
+            } else {
+                Sounds::None
+            };
+
+            let dest = self.stacks[t].calc_card_pos(n);
+            n += 1;
+
+            t_stop = t_start + time::Duration::new(0, 100_000_000);
+            let anim = Animation::new(card, dest, t_start, t_stop, t, Sounds::None, sound);
+            self.animations.add(anim);
+            t_start = t_start + time::Duration::new(0, 10_000_000);
+        }
+    }
+
+    pub fn animate_deal(&mut self) {
         self.deal_pending = true
     }
 
@@ -265,10 +316,11 @@ impl Table {
         let mut t_stop;
 
         for t in self.solitaire_stacks().cycle() {
-            let card = match self.stacks[s].pop() {
+            let mut card = match self.stacks[s].pop() {
                 Some(card) => card,
                 None => break,
             };
+            card.set_faceup(true);
 
             let n = virtual_stacks[t];
             let dest = self.stacks[t].calc_card_pos(n);
@@ -283,7 +335,7 @@ impl Table {
         }
     }
 
-    pub fn move_card(&mut self, src: usize, dst: usize) {
+    pub fn animate_move(&mut self, src: usize, dst: usize) {
         self.animove.push((src, dst));
     }
 

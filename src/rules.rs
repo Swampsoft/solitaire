@@ -140,7 +140,7 @@ pub fn global_rules(table: &mut Table) -> bool {
     }
 
     if let Some((s, t)) = auto_move {
-        table.move_card(s, t);
+        table.animate_move(s, t);
         dirty = false;
     }
 

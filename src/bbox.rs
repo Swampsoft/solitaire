@@ -21,6 +21,11 @@ impl BoundingBox {
         BoundingBox::new(f32::INFINITY, -f32::INFINITY, f32::INFINITY, -f32::INFINITY)
     }
 
+    pub fn top(&self) -> f32 { self.topleft.y }
+    pub fn bottom(&self) -> f32 { self.bottomright.y }
+    pub fn left(&self) -> f32 { self.topleft.x }
+    pub fn right(&self) -> f32 { self.bottomright.x }
+
     pub fn merge(&mut self, other: &BoundingBox) {
         self.topleft.x = f32::min(self.topleft.x, other.topleft.x);
         self.topleft.y = f32::min(self.topleft.y, other.topleft.y);
@@ -32,7 +37,7 @@ impl BoundingBox {
         x >= self.topleft.x && y >= self.topleft.y && x <= self.bottomright.x && y <= self.bottomright.y
     }
 
-    pub fn is_touching(&self, other: &BoundingBox) -> bool {
+    pub fn intersects(&self, other: &BoundingBox) -> bool {
         let ax = self.topleft.x + self.bottomright.x;
         let ay = self.topleft.y + self.bottomright.y;
         let bx = other.topleft.x + other.bottomright.x;

@@ -1,8 +1,10 @@
+use std::time;
 
 use ggez::{Context, GameResult};
 use ggez::event::*;
 use ggez::graphics;
 use ggez::graphics::Point2;
+use ggez::timer;
 
 use resources::Resources;
 use table::Table;
@@ -28,6 +30,7 @@ impl VictoryState {
 
 impl EventHandler for VictoryState {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
+        timer::sleep(time::Duration::new(1, 100_000_000));
         Ok(())
     }
 
@@ -52,7 +55,7 @@ impl EventHandler for VictoryState {
 }
 
 impl From<MainState> for VictoryState {
-    fn from(old: MainState) -> VictoryState {
+    fn from(mut old: MainState) -> VictoryState {
         VictoryState {
             resources: old.resources,
             table: old.table,

@@ -15,3 +15,4 @@ features = ["cargo-resource-root"]
 [dependencies]
 cpuprofiler = { version = "0.0.3", optional = true }
 rand = "*"
+sdl2 = "*"

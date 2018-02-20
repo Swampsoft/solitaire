@@ -3,6 +3,7 @@ use ggez::{Context, GameResult};
 use ggez::graphics;
 use ggez::graphics::Point2;
 use ggez::event::*;
+use ggez::timer;
 
 use super::GameWrapper;
 use super::main_state::MainState;
@@ -38,7 +39,9 @@ impl WelcomeState {
 }
 
 impl EventHandler for WelcomeState {
-    fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
+    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+        let t = timer::get_time_since_start(ctx);
+        self.table.update(t, &mut self.resources);
         Ok(())
     }
 
@@ -56,8 +59,10 @@ impl EventHandler for WelcomeState {
     }
 
     fn mouse_button_down_event(&mut self, ctx: &mut Context, _button: MouseButton, _x: i32, _y: i32) {
-        self.move_on = true;
-        ctx.quit().unwrap();
+        if self.table.game_enabled() {
+            self.move_on = true;
+            ctx.quit().unwrap();
+        }
     }
 }
 

@@ -41,6 +41,7 @@ pub struct Animation {
 }
 
 impl Animation {
+    // TODO: The builder pattern exists for a reason... :)
     pub fn new(card: Card, dest: Point2, t_start: time::Duration, t_stop: time::Duration,
                dest_stack: usize, sound_start: Sounds, sound_stop: Sounds) -> Animation {
         let dt = t_stop - t_start;
@@ -75,6 +76,7 @@ impl Animation {
 pub struct AnimationHandler {
     active_animations: Vec<Animation>,
     pending_animations: Vec<Animation>,
+    time_all_done: time::Duration,
 }
 
 impl AnimationHandler {
@@ -82,6 +84,7 @@ impl AnimationHandler {
         AnimationHandler {
             active_animations: Vec::new(),
             pending_animations: Vec::new(),
+            time_all_done: time::Duration::new(0, 0),
         }
     }
 
@@ -90,6 +93,7 @@ impl AnimationHandler {
     }
 
     pub fn add(&mut self, animation: Animation) {
+        self.time_all_done = time::Duration::max(self.time_all_done, animation.t_stop);
         self.pending_animations.push(animation);
     }
 
@@ -120,6 +124,11 @@ impl AnimationHandler {
             res.play_sound(dead_anim.sound_stop);
             result.push((dead_anim.card, dead_anim.dest_stack))
         }
+
+        if !self.busy() {
+            self.time_all_done = t_now;
+        }
+
         result
     }
 

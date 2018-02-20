@@ -110,7 +110,7 @@ impl EventHandler for MainState  {
 
 impl From<WelcomeState> for MainState {
     fn from(mut old: WelcomeState) -> MainState {
-        old.table.deal();
+        old.table.animate_deal();
         MainState {
             resources: old.resources,
             table: old.table,

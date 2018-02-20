@@ -26,7 +26,7 @@ impl Card {
             pos: Point2::new(0.0, 0.0),
             bbox: BoundingBox::new(0.0, 0.0, WIDTH, HEIGHT),
             stack: None,
-            face_up: true,
+            face_up: false,
             suite
         }
     }
@@ -62,8 +62,8 @@ impl Card {
         self.bbox.bottomright.y += dy;
     }
 
-    pub fn get_bounds(&self) -> BoundingBox {
-        self.bbox
+    pub fn get_bounds(&self) -> &BoundingBox {
+        &self.bbox
     }
 
     pub fn is_hit(&self, x: f32, y: f32) -> bool{

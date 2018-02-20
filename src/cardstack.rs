@@ -62,6 +62,17 @@ impl CardStack {
         }
     }
 
+    pub fn new_buffer(x: i32, y: i32) -> CardStack {
+        let (x, y) = (x as f32, y as f32);
+        CardStack {
+            pos: Point2::new(x, y),
+            rel: Vector2::new(0.0, 0.0),
+            bbox: BoundingBox::new(x, x + cards::WIDTH, y, y + cards::HEIGHT),
+            cards: Vec::new(),
+            rules: StackRules::Dragging,
+        }
+    }
+
     pub fn clear(&mut self) {
         self.cards.clear();
         self.update_bounds();
@@ -69,6 +80,11 @@ impl CardStack {
 
     pub fn len(&self) -> usize {
         self.cards.len()
+    }
+
+    pub fn set_pos(&mut self, pos: Point2) {
+        self.pos = pos;
+        self.update_bounds();
     }
 
     pub fn calc_card_pos(&self, i: usize) -> Point2 {
@@ -161,7 +177,7 @@ impl CardStack {
     }
 
     pub fn accept_drop(&self, other: &CardStack) -> bool {
-        if self.bbox.is_touching(&other.bbox) {
+        if self.bbox.intersects(&other.bbox) {
             self.rules.accept_drop(self.top_suite(),
                                    other.cards.first().expect("Who's dragging an empty card stack around???").suite(),
                                    other.cards.len())
