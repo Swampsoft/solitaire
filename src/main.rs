@@ -30,8 +30,7 @@ const SHENZHEN_PATH: &str =".local/share/Steam/SteamApps/common/SHENZHEN IO/Cont
 fn main() {
     let c = conf::Conf {
         window_mode: conf::WindowMode::default()
-            .dimensions(1280, 806)
-            .borderless(true),
+            .dimensions(1280, 806),
         window_setup: conf::WindowSetup::default().title("SHENZHEN IO Solitaire Clone"),
         backend: conf::Backend::OpenGL{major: 3, minor: 2},
     };

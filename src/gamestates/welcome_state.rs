@@ -8,6 +8,7 @@ use ggez::timer;
 use super::GameWrapper;
 use super::main_state::MainState;
 use super::victory_state::VictoryState;
+use super::giveup_state::GiveupState;
 
 use resources::Resources;
 use table::Table;
@@ -67,7 +68,8 @@ impl EventHandler for WelcomeState {
 }
 
 impl From<VictoryState> for WelcomeState {
-    fn from(old: VictoryState) -> WelcomeState {
+    fn from(mut old: VictoryState) -> WelcomeState {
+        old.table.new_game();
         WelcomeState {
             resources: old.resources,
             table: old.table,
@@ -76,8 +78,9 @@ impl From<VictoryState> for WelcomeState {
     }
 }
 
-impl From<MainState> for WelcomeState {
-    fn from(old: MainState) -> WelcomeState {
+impl From<GiveupState> for WelcomeState {
+    fn from(mut old: GiveupState) -> WelcomeState {
+        old.table.new_game();
         WelcomeState {
             resources: old.resources,
             table: old.table,

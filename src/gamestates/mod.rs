@@ -1,3 +1,4 @@
+mod giveup_state;
 mod main_state;
 mod victory_state;
 mod welcome_state;
@@ -9,11 +10,13 @@ use sdl2::event::EventType;
 use self::welcome_state::WelcomeState;
 use self::main_state::MainState;
 use self::victory_state::VictoryState;
+use self::giveup_state::GiveupState;
 
 pub enum GameWrapper {
     Welcome(WelcomeState),
     Game(MainState),
     Victory(VictoryState),
+    GiveUp(GiveupState),
     Quit,
 }
 
@@ -36,6 +39,10 @@ impl GameWrapper {
                 Ok(state.next_state())
             },
             Victory(mut state) => {
+                event::run(ctx, &mut state)?;
+                Ok(state.next_state())
+            },
+            GiveUp(mut state) => {
                 event::run(ctx, &mut state)?;
                 Ok(state.next_state())
             },

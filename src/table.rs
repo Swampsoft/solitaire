@@ -1,4 +1,5 @@
 
+use std::f32;
 use std::iter::Chain;
 use std::mem;
 use std::ops::Range;
@@ -22,6 +23,7 @@ use rules;
 const ANIMATION_DURATION: u32 =  200_000_000;  // nano seconds
 const SLOW_ANIMATION_DURATION: u32 =  2_000_000_000;  // nano seconds
 const DEAL_INTERVAL: u32 = 100_000_000;  // nano seconds
+const LONG_INTERVAL: u32 = 200_000_000;  // nano seconds
 
 
 pub struct Table {
@@ -33,6 +35,7 @@ pub struct Table {
     deal_pending: bool,
     drop_pending: bool,
     win_pending: bool,
+    giveup_pending: bool,
     animove: Vec<(usize, usize)>,
 }
 
@@ -89,6 +92,7 @@ impl Table {
             deal_pending: false,
             drop_pending: false,
             win_pending: false,
+            giveup_pending: false,
             animove: Vec::new(),
         }
     }
@@ -219,6 +223,11 @@ impl Table {
         if self.win_pending && !self.animations.busy() {
             self.win_pending = false;
             self.schedule_winanimation(t_now);
+        }
+
+        if self.giveup_pending && !self.animations.busy() {
+            self.giveup_pending = false;
+            self.schedule_giveup(t_now);
         }
 
         self.schedule_moves(t_now);
@@ -386,8 +395,34 @@ impl Table {
 
             self.animations.add(anim);
 
-            t_start = t_start + time::Duration::new(0, DEAL_INTERVAL);
+            t_start = t_start + time::Duration::new(0, LONG_INTERVAL);
             s = (s + 1) % self.stacks.len();
+        }
+    }
+
+    pub fn animate_giveup(&mut self) {
+        self.giveup_pending = true
+    }
+
+    pub fn schedule_giveup(&mut self, mut t_start: time::Duration) {
+        let mut sound = Sounds::Sweep;
+        for stack in self.stacks.iter_mut() {
+            while let Some(card) = stack.pop() {
+
+                let mut direction = (card.get_pos() - Point2::new(640.0, 400.0));
+                let dist = direction.norm();
+                direction = direction / dist;
+
+                let dest = card.get_pos() + direction * 800.0;
+
+
+                let t0 = t_start + time::Duration::new(0, (dist * 100_000.0) as u32);
+                let t1 = t0 + time::Duration::new(0, ANIMATION_DURATION);
+
+                let anim = Animation::new(card, dest, t0, t1, None, sound, Sounds::None);
+                self.animations.add(anim);
+                sound = Sounds::None;  // play only one sound
+            }
         }
     }
 }
