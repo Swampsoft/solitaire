@@ -82,11 +82,6 @@ impl CardStack {
         self.cards.len()
     }
 
-    pub fn set_pos(&mut self, pos: Point2) {
-        self.pos = pos;
-        self.update_bounds();
-    }
-
     pub fn calc_card_pos(&self, i: usize) -> Point2 {
         self.pos + self.rel * i as f32
     }

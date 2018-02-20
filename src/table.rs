@@ -278,10 +278,6 @@ impl Table {
         target
     }
 
-    pub fn animate_drop(&mut self) {
-        self.drop_pending = true
-    }
-
     pub fn schedule_drop(&mut self, mut t_start: time::Duration) {
         let t = self.flower_stack();
         let mut n = 0;
@@ -297,7 +293,7 @@ impl Table {
             n += 1;
 
             t_stop = t_start + time::Duration::new(0, 100_000_000);
-            let anim = Animation::new(card, dest, t_start, t_stop, t, Sounds::None, sound);
+            let anim = Animation::new(card, dest, t_start, t_stop, Some(t), Sounds::None, sound);
             self.animations.add(anim);
             t_start = t_start + time::Duration::new(0, 10_000_000);
         }
@@ -328,7 +324,7 @@ impl Table {
 
             t_stop = t_start + time::Duration::new(0, ANIMATION_DURATION);
 
-            let anim = Animation::new(card, dest, t_start, t_stop, t, Sounds::Place, Sounds::None);
+            let anim = Animation::new(card, dest, t_start, t_stop, Some(t), Sounds::Place, Sounds::None);
             self.animations.add(anim);
 
             t_start = t_start + time::Duration::new(0, DEAL_INTERVAL);
@@ -347,7 +343,7 @@ impl Table {
 
             let t_stop = t_start + time::Duration::new(0, ANIMATION_DURATION);
 
-            let anim = Animation::new(card, dest, t_start, t_stop, dst, sound, Sounds::None);
+            let anim = Animation::new(card, dest, t_start, t_stop, Some(dst), sound, Sounds::None);
             self.animations.add(anim);
             sound = Sounds::None;  // play only one sound
         }

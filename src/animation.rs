@@ -30,7 +30,7 @@ impl Path {
 pub struct Animation {
     card: Card,
 
-    dest_stack: usize,
+    dest_stack: Option<usize>,
 
     path: Path,
     t_start: time::Duration,
@@ -43,7 +43,7 @@ pub struct Animation {
 impl Animation {
     // TODO: The builder pattern exists for a reason... :)
     pub fn new(card: Card, dest: Point2, t_start: time::Duration, t_stop: time::Duration,
-               dest_stack: usize, sound_start: Sounds, sound_stop: Sounds) -> Animation {
+               dest_stack: Option<usize>, sound_start: Sounds, sound_stop: Sounds) -> Animation {
         let dt = t_stop - t_start;
         let dur = dt.as_secs() as f32 + dt.subsec_nanos() as f32 * 1e-9;
         let path = Path::new_linear(card.get_pos(), dest, dur);
@@ -122,7 +122,9 @@ impl AnimationHandler {
         for a in done_animations.drain(..).rev() {
             let dead_anim = self.active_animations.swap_remove(a);
             res.play_sound(dead_anim.sound_stop);
-            result.push((dead_anim.card, dead_anim.dest_stack))
+            if let Some(s) = dead_anim.dest_stack {
+                result.push((dead_anim.card, s))
+            }
         }
 
         if !self.busy() {
