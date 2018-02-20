@@ -35,9 +35,7 @@ impl EventHandler for GiveupState {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        self.table.draw(ctx, &self.resources)?;
-
-        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
+        self.table.draw(ctx, &mut self.resources)?;
 
         graphics::present(ctx);
         Ok(())

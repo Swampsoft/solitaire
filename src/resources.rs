@@ -1,6 +1,7 @@
 
 use std::collections::HashMap;
 use std::collections::hash_map::Entry;
+use std::io::{Read, Write};
 
 use ggez::graphics::{Font, Image, Text};
 use ggez::audio::Source;
@@ -19,6 +20,7 @@ pub enum Sounds {
 }
 
 pub struct Resources {
+    wins: u32,
     pub table_image: Image,
     pub card_front: Image,
     pub card_back: Image,
@@ -114,6 +116,7 @@ impl Resources {
         button_images.insert((cards::Color::White, button::ButtonState::Down), Image::new(ctx, "/textures/solitaire/button_white_down.png")?);
 
         let r = Resources {
+            wins: Resources::load_wins(ctx)?,
             table_image: Image::new(ctx, "/textures/solitaire/table_large.png")?,
             card_front: Image::new(ctx, "/textures/solitaire/card_front.png")?,
             card_back: Image::new(ctx, "/textures/solitaire/card_back.png")?,
@@ -153,5 +156,33 @@ impl Resources {
             //Sounds::Deal => self.deal_sound.play(),
             Sounds::Sweep => self.sweep_sound.play(),
         }.unwrap();
+    }
+
+    pub fn wins(&self) -> u32 {
+        self.wins
+    }
+    pub fn add_win(&mut self, ctx: &mut Context) {
+        self.wins += 1;
+        self.store_wins(ctx, self.wins);
+    }
+
+    fn load_wins(ctx: &mut Context) -> GameResult<u32> {
+        match ctx.filesystem.open("/wins.txt") {
+            Ok(mut f) => {
+                let mut string = String::new();
+                f.read_to_string(&mut string).unwrap();
+                let n: u32 = string.parse().unwrap();
+                Ok(n)
+            },
+            Err(GameError::ResourceNotFound(_, _)) => {
+                Ok(0)
+            }
+            Err(e) => Err(e)
+        }
+    }
+
+    pub fn store_wins(&self, ctx: &mut Context, n: u32) {
+        let mut f = ctx.filesystem.create("/wins.txt").unwrap();
+        f.write_all(format!("{}", n).as_bytes()).unwrap();
     }
 }

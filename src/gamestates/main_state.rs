@@ -17,6 +17,7 @@ pub struct MainState {
     pub table: Table,
     dragging: Option<CardStack>,
     dragsource: usize,
+    win_counted: bool,
 }
 
 impl MainState {
@@ -44,6 +45,10 @@ impl EventHandler for MainState  {
         }
 
         if rules::check_wincondition(&mut self.table) {
+            if !self.win_counted {
+                self.resources.add_win(ctx);
+                self.win_counted = true;
+            }
             ctx.quit()?;
         }
 
@@ -52,7 +57,7 @@ impl EventHandler for MainState  {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        self.table.draw(ctx, &self.resources)?;
+        self.table.draw(ctx, &mut self.resources)?;
 
         if let Some(ref stack) = self.dragging {
             stack.draw(ctx, &self.resources)?;
@@ -116,6 +121,7 @@ impl From<WelcomeState> for MainState {
             table: old.table,
             dragsource: 0,
             dragging: None,
+            win_counted: false,
         }
     }
 }

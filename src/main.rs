@@ -40,7 +40,7 @@ fn main() {
     #[cfg(feature = "profiling")]
     PROFILER.lock().unwrap().start("solitaire.profile").unwrap();
 
-    let ctx = &mut ggez::Context::load_from_conf("solitaire", "Martin Billinger", c).unwrap();
+    let ctx = &mut ggez::Context::load_from_conf("solitaire_clone", "Martin Billinger", c).unwrap();
 
     ctx.filesystem.mount(&env::home_dir().unwrap().join(SHENZHEN_PATH), true);
 

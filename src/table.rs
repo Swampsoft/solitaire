@@ -243,11 +243,19 @@ impl Table {
         }
     }
 
-    pub fn draw(&self, ctx: &mut Context, resources: &Resources) -> GameResult<()> {
+    pub fn draw(&self, ctx: &mut Context, resources: &mut Resources) -> GameResult<()> {
         graphics::draw(ctx, &resources.table_image, Point2::new(0.0, 0.0), 0.0)?;
 
         for button in &self.buttons {
             button.draw(ctx, resources)?;
+        }
+
+        {
+            graphics::set_color(ctx, graphics::Color::new(0.0, 0.0, 0.0, 1.0))?;
+            let txt = format!("Wins: {}", resources.wins());
+            let text = resources.get_text(ctx, &txt)?;
+            let pos = graphics::Point2::new(0.0, 806.0 - text.height() as f32);
+            graphics::draw(ctx, text,pos, 0.0)?;
         }
 
         for stack in &self.stacks {

@@ -36,7 +36,7 @@ impl EventHandler for VictoryState {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        self.table.draw(ctx, &self.resources)?;
+        self.table.draw(ctx, &mut self.resources)?;
 
         graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         let text = self.resources.get_text(ctx, "Congratulations.")?;
