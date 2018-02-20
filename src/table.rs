@@ -9,7 +9,7 @@ use rand::{thread_rng, Rng};
 
 use ggez::{Context, GameResult};
 use ggez::graphics;
-use ggez::graphics::Point2;
+use ggez::graphics::{Point2, Vector2};
 
 use animation::{Animation, AnimationHandler};
 use button::{Button, ButtonState};
@@ -20,7 +20,8 @@ use rules;
 
 
 const ANIMATION_DURATION: u32 =  200_000_000;  // nano seconds
-const DEAL_INTERVAL: u32 = 100_000_000;
+const SLOW_ANIMATION_DURATION: u32 =  2_000_000_000;  // nano seconds
+const DEAL_INTERVAL: u32 = 100_000_000;  // nano seconds
 
 
 pub struct Table {
@@ -31,6 +32,7 @@ pub struct Table {
     animations: AnimationHandler,
     deal_pending: bool,
     drop_pending: bool,
+    win_pending: bool,
     animove: Vec<(usize, usize)>,
 }
 
@@ -86,6 +88,7 @@ impl Table {
             animations: AnimationHandler::new(),
             deal_pending: false,
             drop_pending: false,
+            win_pending: false,
             animove: Vec::new(),
         }
     }
@@ -211,6 +214,11 @@ impl Table {
         if self.deal_pending && !self.animations.busy() {
             self.deal_pending = false;
             self.schedule_deal(t_now);
+        }
+
+        if self.win_pending && !self.animations.busy() {
+            self.win_pending = false;
+            self.schedule_winanimation(t_now);
         }
 
         self.schedule_moves(t_now);
@@ -346,6 +354,40 @@ impl Table {
             let anim = Animation::new(card, dest, t_start, t_stop, Some(dst), sound, Sounds::None);
             self.animations.add(anim);
             sound = Sounds::None;  // play only one sound
+        }
+    }
+
+    pub fn animate_win(&mut self) {
+        self.win_pending = true
+    }
+
+    pub fn schedule_winanimation(&mut self, mut t_start: time::Duration) {
+        let mut s = 0;
+
+        let n_cards = self.stacks.iter().map(|stack|stack.len()).sum();
+
+        for i in 0..n_cards {
+            let card;
+            loop  {
+                match self.stacks[s].pop() {
+                    Some(c) => {
+                        card = c;
+                        break
+                    },
+                    None => s = (s + 1) % self.stacks.len(),
+                }
+            };
+
+            let t_stop = t_start + time::Duration::new(0, SLOW_ANIMATION_DURATION);
+
+            let dest = card.get_pos() + Vector2::new(0.0, 800.0);
+
+            let anim = Animation::new(card, dest, t_start, t_stop, None, Sounds::None, Sounds::None);
+
+            self.animations.add(anim);
+
+            t_start = t_start + time::Duration::new(0, DEAL_INTERVAL);
+            s = (s + 1) % self.stacks.len();
         }
     }
 }

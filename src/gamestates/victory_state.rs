@@ -29,8 +29,9 @@ impl VictoryState {
 }
 
 impl EventHandler for VictoryState {
-    fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
-        timer::sleep(time::Duration::new(1, 100_000_000));
+    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+        let t = timer::get_time_since_start(ctx);
+        self.table.update(t, &mut self.resources);
         Ok(())
     }
 
@@ -56,6 +57,7 @@ impl EventHandler for VictoryState {
 
 impl From<MainState> for VictoryState {
     fn from(mut old: MainState) -> VictoryState {
+        old.table.animate_win();
         VictoryState {
             resources: old.resources,
             table: old.table,
