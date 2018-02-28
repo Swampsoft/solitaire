@@ -9,6 +9,7 @@ use super::GameWrapper;
 use super::victory_state::VictoryState;
 use super::giveup_state::GiveupState;
 
+use cs::GameState;
 use resources::Resources;
 use table::Table;
 
@@ -16,6 +17,8 @@ pub struct WelcomeState {
     pub resources: Resources,
     pub table: Table,
     pub move_on: bool,
+    pub state: GameState,
+    pub ready: bool,
 }
 
 impl WelcomeState {
@@ -26,6 +29,8 @@ impl WelcomeState {
             resources: Resources::new(ctx)?,
             table: table,
             move_on: false,
+            state: GameState::new(),
+            ready: false,
         })
     }
 
@@ -40,14 +45,25 @@ impl WelcomeState {
 
 impl EventHandler for WelcomeState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let t = timer::get_time_since_start(ctx);
-        self.table.update(t, &mut self.resources);
+        //let t = timer::get_time_since_start(ctx);
+        //self.table.update(t, &mut self.resources);
+
+        if !self.ready {
+            // skip first frame because it has a super high delta-time
+            self.ready = true;
+        } else {
+            let dt = timer::duration_to_f64(timer::get_delta(ctx)) as f32;
+            self.state.run_update(dt);
+        }
+
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        self.table.draw(ctx, &mut self.resources)?;
+        self.state.run_render(ctx, &self.resources)?;
+
+        //graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
+        //self.table.draw(ctx, &mut self.resources)?;
 
         graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         let text = self.resources.get_text(ctx, "Click anywhere to start a new game.")?;
@@ -73,6 +89,8 @@ impl From<VictoryState> for WelcomeState {
             resources: old.resources,
             table: old.table,
             move_on: false,
+            state: GameState::new(),
+            ready: true,
         }
     }
 }
@@ -84,6 +102,8 @@ impl From<GiveupState> for WelcomeState {
             resources: old.resources,
             table: old.table,
             move_on: false,
+            state: GameState::new(),
+            ready: true,
         }
     }
 }

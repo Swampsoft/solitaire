@@ -149,14 +149,14 @@ pub enum Color {
 }
 
 impl Color {
-    fn set_font_color(&self, ctx: &mut Context) -> GameResult<()> {
+    pub fn set_font_color(&self, ctx: &mut Context) -> GameResult<()> {
         match *self {
             Color::Red => graphics::set_color(ctx, graphics::Color::new(0.7, 0.2, 0.1, 1.0)),
             Color::Green => graphics::set_color(ctx, graphics::Color::new(0.1, 0.4, 0.3, 1.0)),
             Color::White => graphics::set_color(ctx, graphics::Color::new(0.1, 0.1, 0.1, 1.0)),
         }
     }
-    fn set_icon_color(&self, ctx: &mut Context) -> GameResult<()> {
+    pub fn set_icon_color(&self, ctx: &mut Context) -> GameResult<()> {
         match *self {
             Color::Red => graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0)),
             Color::Green => graphics::set_color(ctx, graphics::Color::new(0.1, 0.4, 0.3, 1.0)),

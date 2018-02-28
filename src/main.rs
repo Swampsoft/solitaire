@@ -8,9 +8,11 @@ extern crate sdl2;
 
 mod gamestates;
 
+mod all;
 mod animation;
 mod bbox;
 mod button;
+mod cs;
 mod cards;
 mod cardstack;
 mod resources;
