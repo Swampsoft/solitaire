@@ -5,7 +5,7 @@ use ggez::graphics::Point2;
 
 mod animation_systems;
 mod render_systems;
-mod types;
+pub mod types;
 
 use resources::Resources;
 
@@ -17,8 +17,8 @@ type Component<T> = Vec<Option<T>>;
 
 #[derive(Default)]
 pub struct GameState {
-    entities: Vec<usize>,
-    ent_lookup: HashMap<usize, usize>,
+    entities: Vec<Entity>,
+    ent_lookup: HashMap<Entity, usize>,
 
     stacks: Component<Stack>,
     positions: Component<Point2>,
@@ -27,42 +27,14 @@ pub struct GameState {
     animations: Component<Animation>,
 
     next_id: usize,
+
+    busy: bool,
+    render_queue: RenderQueue,
 }
 
 impl GameState {
     pub fn new() -> GameState {
         let mut state = GameState::default();
-
-        state.new_entity().with_position(Point2::new(533.0, 54.0)).with_button(Button::new(Color::Red)).build();
-        state.new_entity().with_position(Point2::new(533.0, 137.0)).with_button(Button::new(Color::Green)).build();
-        state.new_entity().with_position(Point2::new(533.0, 220.0)).with_button(Button::new(Color::White)).build();
-
-        state.new_entity().with_position(Point2::new(45.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
-        state.new_entity().with_position(Point2::new(197.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
-        state.new_entity().with_position(Point2::new(349.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
-        let f = state.new_entity().with_position(Point2::new(614.0, 20.0)).with_stack(Stack::new(StackRole::Flower)).build();
-        state.new_entity().with_position(Point2::new(805.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
-        state.new_entity().with_position(Point2::new(957.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
-        state.new_entity().with_position(Point2::new(1109.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
-        state.new_entity().with_position(Point2::new(45.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        state.new_entity().with_position(Point2::new(197.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        state.new_entity().with_position(Point2::new(349.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        state.new_entity().with_position(Point2::new(501.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        state.new_entity().with_position(Point2::new(653.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        state.new_entity().with_position(Point2::new(805.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        state.new_entity().with_position(Point2::new(957.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        state.new_entity().with_position(Point2::new(1109.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-
-        let target_stack = Some(f);
-        let stack_pos = state.positions[state.ent_lookup[&f]].unwrap();
-        let shift = state.stacks[state.ent_lookup[&f]].as_ref().unwrap().get_stackshift();
-        for n in 0..40 {
-            let i = 1.0 + 0.1 * (n as f32);
-            let start_pos = stack_pos - shift * i * (stack_pos.y + render_systems::CARD_HEIGHT) / shift.y;
-            let target_pos = stack_pos + shift * n as f32;
-            state.animate(Suite::FaceDown, start_pos, 100.0 + n as f32, Animation { target_pos, target_stack, time_left: 1.0 * i });
-        }
-
         state
     }
 
@@ -70,7 +42,7 @@ impl GameState {
         EntityBuilder::new(self)
     }
 
-    pub fn remove_entity(&mut self, id: usize) {
+    pub fn remove_entity(&mut self, id: Entity) {
         let idx = self.ent_lookup[&id];
 
         // last entity takes the place of id, so we need to update the lookup
@@ -86,22 +58,55 @@ impl GameState {
         self.entities.swap_remove(idx);
     }
 
-    pub fn run_update(&mut self, dt: f32) -> bool {
-        let mut busy = false;
-        busy |= self.animation_update_system(dt);
-        return busy;
+    pub fn get_stack(&self, id: Entity) -> Option<&Stack> {
+        let idx = self.ent_lookup[&id];
+        self.stacks[idx].as_ref()
     }
 
-    pub fn run_render(&self, ctx: &mut Context, res: &Resources) -> GameResult<()> {
-        let mut rq = RenderQueue::new();
-        rq.background_render_system(ctx, res)?;
-        rq.button_render_system(ctx, res, &self.positions, &self.buttons)?;
-        rq.stack_render_system(ctx, res, &self.positions, &self.stacks, &self.zorder)?;
-        rq.render(ctx, res)?;
+    pub fn get_stack_mut(&mut self, id: Entity) -> Option<&mut Stack> {
+        let idx = self.ent_lookup[&id];
+        self.stacks[idx].as_mut()
+    }
+
+    pub fn get_position(&self, id: Entity) -> Option<&Point2> {
+        let idx = self.ent_lookup[&id];
+        self.positions[idx].as_ref()
+    }
+
+    pub fn get_zorder(&self, id: Entity) -> Option<&f32> {
+        let idx = self.ent_lookup[&id];
+        self.zorder[idx].as_ref()
+    }
+
+    pub fn get_button(&self, id: Entity) -> Option<&Button> {
+        let idx = self.ent_lookup[&id];
+        self.buttons[idx].as_ref()
+    }
+
+    pub fn get_animation(&self, id: Entity) -> Option<&Animation> {
+        let idx = self.ent_lookup[&id];
+        self.animations[idx].as_ref()
+    }
+
+    pub fn busy(&self) -> bool {
+        self.busy
+    }
+
+    pub fn run_update(&mut self, dt: f32) -> bool {
+        self.busy = false;
+        self.busy |= self.animation_update_system(dt);
+        self.busy
+    }
+
+    pub fn run_render(&mut self, ctx: &mut Context, res: &Resources) -> GameResult<()> {
+        self.render_queue.background_render_system(ctx, res)?;
+        self.render_queue.button_render_system(ctx, res, &self.positions, &self.buttons)?;
+        self.render_queue.stack_render_system(ctx, res, &self.positions, &self.stacks, &self.zorder)?;
+        self.render_queue.render(ctx, res)?;
         Ok(())
     }
 
-    fn animate(&mut self, card: Suite, pos: Point2, z: f32, ani: Animation) {
+    pub fn animate(&mut self, card: Suite, pos: Point2, z: f32, ani: Animation) {
         let mut stack = Stack::new(StackRole::Animation);
         stack.push_card(card);
 
@@ -114,7 +119,7 @@ impl GameState {
     }
 }
 
-struct EntityBuilder<'a> {
+pub struct EntityBuilder<'a> {
     state: &'a mut GameState,
     stack: Option<Stack>,
     position: Option<Point2>,
@@ -135,8 +140,8 @@ impl<'a> EntityBuilder<'a> {
         }
     }
 
-    fn build(self) -> usize {
-        let id = self.state.next_id;
+    pub fn build(self) -> Entity {
+        let id = Entity::new(self.state.next_id);
         let idx = self.state.entities.len();
         self.state.entities.push(id);
         self.state.ent_lookup.insert(id, idx);
@@ -150,27 +155,27 @@ impl<'a> EntityBuilder<'a> {
         id
     }
 
-    fn with_stack(mut self, value: Stack) -> EntityBuilder<'a> {
+    pub fn with_stack(mut self, value: Stack) -> EntityBuilder<'a> {
         self.stack = Some(value);
         self
     }
 
-    fn with_position(mut self, pos: Point2) -> EntityBuilder<'a> {
+    pub fn with_position(mut self, pos: Point2) -> EntityBuilder<'a> {
         self.position = Some(pos);
         self
     }
 
-    fn with_zorder(mut self, z: f32) -> EntityBuilder<'a> {
+    pub fn with_zorder(mut self, z: f32) -> EntityBuilder<'a> {
         self.zorder = Some(z);
         self
     }
 
-    fn with_button(mut self, value: Button) -> EntityBuilder<'a> {
+    pub fn with_button(mut self, value: Button) -> EntityBuilder<'a> {
         self.button = Some(value);
         self
     }
 
-    fn with_animation(mut self, value: Animation) -> EntityBuilder<'a> {
+    pub fn with_animation(mut self, value: Animation) -> EntityBuilder<'a> {
         self.animation = Some(value);
         self
     }

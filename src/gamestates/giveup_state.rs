@@ -11,7 +11,6 @@ use super::main_state::MainState;
 
 pub struct GiveupState {
     pub resources: Resources,
-    pub table: Table,
 }
 
 impl GiveupState {
@@ -23,11 +22,11 @@ impl GiveupState {
 impl EventHandler for GiveupState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         let t = timer::get_time_since_start(ctx);
-        self.table.update(t, &mut self.resources);
+        //self.table.update(t, &mut self.resources);
 
-        if self.table.game_enabled() {
+        /*if self.table.game_enabled() {
             ctx.quit().unwrap();
-        }
+        }*/
 
         Ok(())
     }
@@ -35,7 +34,7 @@ impl EventHandler for GiveupState {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        self.table.draw(ctx, &mut self.resources)?;
+        //self.table.draw(ctx, &mut self.resources)?;
 
         graphics::present(ctx);
         Ok(())
@@ -44,10 +43,8 @@ impl EventHandler for GiveupState {
 
 impl From<MainState> for GiveupState {
     fn from(mut old: MainState) -> GiveupState {
-        old.table.animate_giveup();
         GiveupState {
             resources: old.resources,
-            table: old.table,
         }
     }
 }

@@ -14,15 +14,11 @@ use super::GameState;
 use super::types::*;
 
 
-pub const CARD_WIDTH: f32 = 123.0;
-pub const CARD_HEIGHT: f32 = 233.0;
-
-
 enum DrawCommand {
     Card{z: f32, pos: Point2, suite: Suite}
 }
 
-
+#[derive(Default)]
 pub struct RenderQueue {
     queue: BinaryHeap<DrawCommand>,
 }
@@ -65,7 +61,7 @@ impl RenderQueue {
             let mut pos = *p;
             let dpos = s.get_stackshift();
 
-            for (i, card) in s.cards_iter().enumerate() {
+            for (i, card) in s.iter().enumerate() {
                 let z = z + 0.1 * i as f32;
                 graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
                 //res.card_front.draw(ctx, pos, 0.0)?;

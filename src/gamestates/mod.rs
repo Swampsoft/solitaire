@@ -3,6 +3,8 @@ mod main_state;
 mod victory_state;
 mod welcome_state;
 
+use std::fmt;
+
 use ggez::{Context, GameResult};
 use ggez::event;
 use sdl2::event::EventType;
@@ -20,15 +22,17 @@ pub enum GameWrapper {
     Quit,
 }
 
+use self::GameWrapper::*;
+
 impl GameWrapper {
     pub fn new(ctx: &mut Context) -> GameResult<Self> {
         Ok(GameWrapper::Welcome(WelcomeState::new(ctx)?))
     }
 
     pub fn run(self, ctx: &mut Context) -> GameResult<Self> {
-        use self::GameWrapper::*;
         // make sure no unhandled events are left when entering a new state
         ctx.event_context.flush_events(EventType::First as u32, EventType::Last as u32);
+        info!("Entering game state {}", self);
         match self {
             Welcome(mut state) => {
                 event::run(ctx, &mut state)?;
@@ -48,5 +52,18 @@ impl GameWrapper {
             },
             Quit => panic!("Invalid Game State")
         }
+    }
+}
+
+impl fmt::Display for GameWrapper {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let name = match *self {
+            Welcome(_) => "Welcome",
+            Game(_) => "Game",
+            Victory(_) => "Victory",
+            GiveUp(_) => "GiveUp",
+            Quit => "Quit",
+        };
+        write!(f, "{}", name)
     }
 }

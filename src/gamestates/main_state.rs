@@ -5,6 +5,7 @@ use ggez::graphics;
 use ggez::timer;
 
 use cardstack::CardStack;
+use game::Game;
 use resources::Resources;
 use rules;
 use table::Table;
@@ -14,7 +15,7 @@ use super::welcome_state::WelcomeState;
 
 pub struct MainState {
     pub resources: Resources,
-    pub table: Table,
+    pub game: Game,
     dragging: Option<CardStack>,
     dragsource: usize,
     win_counted: bool,
@@ -22,11 +23,12 @@ pub struct MainState {
 
 impl MainState {
     pub fn next_state(self) -> GameWrapper{
-        if rules::check_wincondition(&self.table) {
+        /*if rules::check_wincondition(&self.table) {
             GameWrapper::Victory(self.into())
         } else {
             GameWrapper::GiveUp(self.into())
-        }
+        }*/
+        GameWrapper::Victory(self.into())
     }
 }
 
@@ -37,7 +39,10 @@ impl EventHandler for MainState  {
             self.resources.music.play()?;
         }
 
-        let t = timer::get_time_since_start(ctx);
+        let dt = timer::duration_to_f64(timer::get_delta(ctx)) as f32;
+        self.game.state.run_update(dt);
+
+        /*let t = timer::get_time_since_start(ctx);
         self.table.update(t, &mut self.resources);
 
         if !self.table.game_enabled() {
@@ -50,14 +55,13 @@ impl EventHandler for MainState  {
                 self.win_counted = true;
             }
             ctx.quit()?;
-        }
+        }*/
 
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        self.table.draw(ctx, &mut self.resources)?;
+        self.game.state.run_render(ctx, &self.resources)?;
 
         if let Some(ref stack) = self.dragging {
             stack.draw(ctx, &self.resources)?;
@@ -68,7 +72,7 @@ impl EventHandler for MainState  {
     }
 
     fn mouse_button_down_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: i32, y: i32) {
-        if !self.table.game_enabled() {
+        /*if !self.table.game_enabled() {
             return
         }
 
@@ -81,11 +85,11 @@ impl EventHandler for MainState  {
             }
         }
 
-        self.table.handle_click(x as f32, y as f32);
+        self.table.handle_click(x as f32, y as f32);*/
     }
 
     fn mouse_button_up_event(&mut self, _ctx: &mut Context, _button: MouseButton, _x: i32, _y: i32) {
-        if !self.table.game_enabled() {
+        /*if !self.table.game_enabled() {
             return
         }
 
@@ -102,7 +106,7 @@ impl EventHandler for MainState  {
             }
             self.resources.place_sound.play().unwrap();
             self.table.push_stack(self.dragsource, dstack);
-        }
+        }*/
     }
 
     fn mouse_motion_event(&mut self, _ctx: &mut Context, _state: MouseState,
@@ -115,10 +119,10 @@ impl EventHandler for MainState  {
 
 impl From<WelcomeState> for MainState {
     fn from(mut old: WelcomeState) -> MainState {
-        old.table.animate_deal();
+        old.game.animate_deal();
         MainState {
             resources: old.resources,
-            table: old.table,
+            game: old.game,
             dragsource: 0,
             dragging: None,
             win_counted: false,

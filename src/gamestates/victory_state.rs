@@ -12,7 +12,6 @@ use super::main_state::MainState;
 
 pub struct VictoryState {
     pub resources: Resources,
-    pub table: Table,
     pub move_on: bool,
 }
 
@@ -29,14 +28,14 @@ impl VictoryState {
 impl EventHandler for VictoryState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         let t = timer::get_time_since_start(ctx);
-        self.table.update(t, &mut self.resources);
+        //self.table.update(t, &mut self.resources);
         Ok(())
     }
 
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        self.table.draw(ctx, &mut self.resources)?;
+        //self.table.draw(ctx, &mut self.resources)?;
 
         graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         let text = self.resources.get_text(ctx, "Congratulations.")?;
@@ -55,10 +54,8 @@ impl EventHandler for VictoryState {
 
 impl From<MainState> for VictoryState {
     fn from(mut old: MainState) -> VictoryState {
-        old.table.animate_win();
         VictoryState {
             resources: old.resources,
-            table: old.table,
             move_on: false,
         }
     }

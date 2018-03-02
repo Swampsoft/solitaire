@@ -5,7 +5,19 @@ pub use ggez::graphics::{Point2, Vector2};
 pub use button::ButtonState;
 pub use cards::Color;
 
-const MAX_STACK_SIZE: usize = 14;
+
+pub const CARD_WIDTH: f32 = 123.0;
+pub const CARD_HEIGHT: f32 = 233.0;
+
+
+#[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
+pub struct Entity(usize);
+
+impl Entity {
+    pub fn new(id: usize) -> Entity {
+        Entity(id)
+    }
+}
 
 pub struct Button {
     pub color: Color,
@@ -52,8 +64,12 @@ impl Stack {
         }
     }
 
-    pub fn cards_iter(&self) -> slice::Iter<Suite> {
+    pub fn len(&self) -> usize { self.cards.len() }
+    pub fn iter(&self) -> slice::Iter<Suite> {
         self.cards.iter()
+    }
+    pub fn iter_mut(&mut self) -> slice::IterMut<Suite> {
+        self.cards.iter_mut()
     }
 
     pub fn push_card(&mut self, card: Suite) {
@@ -77,7 +93,8 @@ impl Stack {
 }
 
 pub struct Animation {
+    pub start_delay: f32,
     pub time_left: f32,
     pub target_pos: Point2,
-    pub target_stack: Option<usize>,
+    pub target_stack: Option<Entity>,
 }
