@@ -6,6 +6,7 @@ use ggez::graphics::Point2;
 mod animation_systems;
 mod input_systems;
 mod render_systems;
+mod rules;
 pub mod types;
 
 use resources::Resources;

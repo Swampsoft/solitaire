@@ -26,14 +26,14 @@ impl Game {
         state.new_entity().with_position(Point2::new(805.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
         state.new_entity().with_position(Point2::new(957.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
         state.new_entity().with_position(Point2::new(1109.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
-        let a = state.new_entity().with_position(Point2::new(45.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        let b = state.new_entity().with_position(Point2::new(197.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        let c = state.new_entity().with_position(Point2::new(349.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        let d = state.new_entity().with_position(Point2::new(501.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        let e = state.new_entity().with_position(Point2::new(653.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        let f = state.new_entity().with_position(Point2::new(805.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        let g = state.new_entity().with_position(Point2::new(957.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
-        let h = state.new_entity().with_position(Point2::new(1109.0, 283.0)).with_stack(Stack::new(StackRole::Generic)).build();
+        let a = state.new_entity().with_position(Point2::new(45.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
+        let b = state.new_entity().with_position(Point2::new(197.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
+        let c = state.new_entity().with_position(Point2::new(349.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
+        let d = state.new_entity().with_position(Point2::new(501.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
+        let e = state.new_entity().with_position(Point2::new(653.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
+        let f = state.new_entity().with_position(Point2::new(805.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
+        let g = state.new_entity().with_position(Point2::new(957.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
+        let h = state.new_entity().with_position(Point2::new(1109.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
 
         let mut game = Game {
             state,

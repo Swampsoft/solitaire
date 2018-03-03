@@ -1,8 +1,10 @@
 
 use all::All;
+use bbox::BoundingBox;
 
 use super::Component;
 use super::GameState;
+use super::rules;
 use super::types::*;
 
 impl GameState {
@@ -42,8 +44,12 @@ impl GameState {
                         mouse_pos.y >= card_pos.y && mouse_pos.y <= card_pos.y + CARD_HEIGHT {
 
                         let substack = s.split(i);
-                        hit = Some((card_pos, substack, *e));
 
+                        if rules::is_valid_sequence(substack.iter()) {
+                            hit = Some((card_pos, substack, *e));
+                        } else {
+                            s.extend(substack);
+                        }
                         break 'outer  // there can be only one
                     }
                 }
@@ -68,10 +74,37 @@ impl GameState {
     pub fn done_drag_system(&mut self) {
         if let Some((src, drg)) = self.drag_lock.take() {
             let idx = self.ent_lookup[&drg];
-            let d_stack = self.stacks[idx].take().unwrap();
+            let mut d_stack = self.stacks[idx].take();
+            let pos = self.positions[idx].take().unwrap();
 
-            let stack = self.get_stack_mut(src).unwrap();
-            stack.extend(d_stack);
+            let bb_drag = BoundingBox::new(pos.x, pos.x + CARD_WIDTH, pos.y, pos.y + CARD_HEIGHT);
+
+            {
+                let compound_iterator = self.positions.iter()
+                    .zip(self.stacks.iter_mut())
+                    .filter_map(|x| x.all());
+                for (p, s) in compound_iterator {
+                    let q = p + s.get_stackshift() * (s.len() as f32 - 1.0).max(0.0) + Vector2::new(CARD_WIDTH, CARD_HEIGHT);
+                    let bb_target = BoundingBox::new(p.x, q.x, p.y, q.y);
+
+                    if bb_target.intersects(&bb_drag) {
+                        if rules::is_valid_drop(s.role, s.cards.last(),
+                                                d_stack.as_ref().unwrap().cards.first().unwrap(),
+                                                d_stack.as_ref().unwrap().len()) {
+                            s.extend(d_stack.take().unwrap());
+                            break
+                        }
+                    }
+
+                }
+            }
+
+            if let Some(ds) = d_stack {
+                let stack = self.get_stack_mut(src).unwrap();
+                stack.extend(ds);
+            }
+
+            self.remove_entity(drg);
         }
     }
 }

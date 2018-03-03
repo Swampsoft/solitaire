@@ -44,12 +44,12 @@ pub enum Suite {
     Number(u8, Color),
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum StackRole {
     Dragon,
-    DragonLocked,
     Flower,
     Target,
+    Sorting,
     Generic,
     Animation,
 }
@@ -90,9 +90,10 @@ impl Stack {
     pub fn get_stackshift(&self) -> Vector2 {
         match self.role {
             StackRole::Dragon => Vector2::new(0.1, -0.25),
-            StackRole::DragonLocked => Vector2::new(0.1, -0.25),
+            //StackRole::DragonLocked => Vector2::new(0.1, -0.25),
             StackRole::Flower => Vector2::new(0.1, -0.25),
             StackRole::Target => Vector2::new(0.1, -0.25),
+            StackRole::Sorting => Vector2::new(0.0, 32.0),
             StackRole::Generic => Vector2::new(0.0, 32.0),
             StackRole::Animation => Vector2::new(0.0, 0.0),
         }
