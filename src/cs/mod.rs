@@ -4,6 +4,7 @@ use ggez::{Context, GameResult};
 use ggez::graphics::Point2;
 
 mod animation_systems;
+mod input_systems;
 mod render_systems;
 pub mod types;
 
@@ -30,6 +31,8 @@ pub struct GameState {
 
     busy: bool,
     render_queue: RenderQueue,
+
+    drag_lock: Option<(Entity, Entity)>
 }
 
 impl GameState {
@@ -73,6 +76,11 @@ impl GameState {
         self.positions[idx].as_ref()
     }
 
+    pub fn get_position_mut(&mut self, id: Entity) -> Option<&mut Point2> {
+        let idx = self.ent_lookup[&id];
+        self.positions[idx].as_mut()
+    }
+
     pub fn get_zorder(&self, id: Entity) -> Option<&f32> {
         let idx = self.ent_lookup[&id];
         self.zorder[idx].as_ref()
@@ -104,6 +112,22 @@ impl GameState {
         self.render_queue.stack_render_system(ctx, res, &self.positions, &self.stacks, &self.zorder)?;
         self.render_queue.render(ctx, res)?;
         Ok(())
+    }
+
+    pub fn handle_mouse_button_down(&mut self, x: i32, y: i32) {
+        let pos = Point2::new(x as f32, y as f32);
+        self.begin_drag_system(pos);
+        self.button_click_system(pos);
+    }
+
+    pub fn handle_mouse_button_up(&mut self, x: i32, y: i32) {
+        let pos = Point2::new(x as f32, y as f32);
+        self.done_drag_system();
+    }
+
+    pub fn handle_mouse_move(&mut self, xrel: i32, yrel: i32) {
+        let dpos = Vector2::new(xrel as f32, yrel as f32);
+        self.do_drag_system(dpos);
     }
 
     pub fn animate(&mut self, card: Suite, pos: Point2, z: f32, ani: Animation) {

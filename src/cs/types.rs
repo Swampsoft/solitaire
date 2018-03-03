@@ -9,6 +9,9 @@ pub use cards::Color;
 pub const CARD_WIDTH: f32 = 123.0;
 pub const CARD_HEIGHT: f32 = 233.0;
 
+pub const BUTTON_RADIUS: f32 = 30.0;
+pub const BUTTON_RADIUS_SQUARED: f32 = BUTTON_RADIUS * BUTTON_RADIUS;
+
 
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
 pub struct Entity(usize);
@@ -33,7 +36,7 @@ impl Button {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Suite {
     FaceDown,
     Flower,
@@ -80,6 +83,10 @@ impl Stack {
         self.cards.pop()
     }
 
+    pub fn extend(&mut self, other: Stack) {
+        self.cards.extend(other.cards);
+    }
+
     pub fn get_stackshift(&self) -> Vector2 {
         match self.role {
             StackRole::Dragon => Vector2::new(0.1, -0.25),
@@ -88,6 +95,13 @@ impl Stack {
             StackRole::Target => Vector2::new(0.1, -0.25),
             StackRole::Generic => Vector2::new(0.0, 32.0),
             StackRole::Animation => Vector2::new(0.0, 0.0),
+        }
+    }
+
+    pub fn split(&mut self, at: usize) -> Stack {
+        Stack {
+            cards: self.cards.split_off(at),
+            role: StackRole::Generic
         }
     }
 }

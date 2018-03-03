@@ -57,7 +57,11 @@ impl RenderQueue {
 
     pub fn stack_render_system(&mut self, ctx: &mut Context, res: &Resources,
                                pos: &Component<Point2>, stk: &Component<Stack>, zs: &Component<f32>) -> GameResult<()> {
-        for (p, s, &z) in pos.iter().zip(stk.iter()).zip(zs.iter()).filter_map(|x| x.all()) {
+        let compound_iterator = pos.iter()
+            .zip(stk.iter())
+            .zip(zs.iter())
+            .filter_map(|x| -> (Option<(_, _, &f32)>) {x.all()});
+        for (p, s, &z) in compound_iterator {
             let mut pos = *p;
             let dpos = s.get_stackshift();
 

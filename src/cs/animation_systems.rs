@@ -8,7 +8,7 @@ use super::GameState;
 use super::types::*;
 
 impl GameState {
-    pub fn animation_update_system(&mut self, mut dt: f32) -> bool {
+    pub fn animation_update_system(&mut self, dt: f32) -> bool {
         let mut busy = false;
 
         let mut finished = Vec::new();
@@ -42,7 +42,6 @@ impl GameState {
                 self.stacks[tidx].as_mut().unwrap().push_card(card);
             }
             self.remove_entity(e);
-            println!("{:?}", e);
         }
 
         busy

@@ -72,6 +72,7 @@ impl EventHandler for MainState  {
     }
 
     fn mouse_button_down_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: i32, y: i32) {
+        self.game.state.handle_mouse_button_down(x, y);
         /*if !self.table.game_enabled() {
             return
         }
@@ -88,7 +89,8 @@ impl EventHandler for MainState  {
         self.table.handle_click(x as f32, y as f32);*/
     }
 
-    fn mouse_button_up_event(&mut self, _ctx: &mut Context, _button: MouseButton, _x: i32, _y: i32) {
+    fn mouse_button_up_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: i32, y: i32) {
+        self.game.state.handle_mouse_button_up(x, y);
         /*if !self.table.game_enabled() {
             return
         }
@@ -111,9 +113,10 @@ impl EventHandler for MainState  {
 
     fn mouse_motion_event(&mut self, _ctx: &mut Context, _state: MouseState,
                           _x: i32, _y: i32, xrel: i32, yrel: i32) {
-        if let Some(ref mut stack) = self.dragging {
+        self.game.state.handle_mouse_move(xrel, yrel);
+        /*if let Some(ref mut stack) = self.dragging {
             stack.move_pos(xrel as f32, yrel as f32);
-        }
+        }*/
     }
 }
 

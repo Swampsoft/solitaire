@@ -132,6 +132,33 @@ for (&'a mut Option<A>, &'b mut Option<B>, &'c mut Option<C>, &'d mut Option<D>)
     }
 }
 
+impl<'a, 'b, 'c, A, B, C> All<Option<(&'a A, &'b B, &'c C)>> for ((&'a Option<A>, &'b Option<B>), &'c C) {
+    fn all(self) -> Option<(&'a A, &'b B, &'c C)> {
+        match self {
+            ((&Some(ref a), &Some(ref b)), ref c) => Some((a, b, c)),
+            _ => None
+        }
+    }
+}
+
+impl<'a, 'b, 'c, A, B, C> All<Option<(&'a mut A, &'b B, &'c C)>> for ((&'a mut Option<A>, &'b Option<B>), &'c C) {
+    fn all(self) -> Option<(&'a mut A, &'b B, &'c C)> {
+        match self {
+            ((&mut Some(ref mut a), &Some(ref b)), ref c) => Some((a, b, c)),
+            _ => None
+        }
+    }
+}
+
+impl<'a, 'b, 'c, A, B, C> All<Option<(&'a A, &'b mut B, &'c C)>> for ((&'a Option<A>, &'b mut Option<B>), &'c C) {
+    fn all(self) -> Option<(&'a A, &'b mut B, &'c C)> {
+        match self {
+            ((&Some(ref a), &mut Some(ref mut b)), ref c) => Some((a, b, c)),
+            _ => None
+        }
+    }
+}
+
 impl<'a, 'b, 'c, A, B, C> All<Option<(&'a mut A, &'b mut B, &'c C)>> for ((&'a mut Option<A>, &'b mut Option<B>), &'c C) {
     fn all(self) -> Option<(&'a mut A, &'b mut B, &'c C)> {
         match self {
