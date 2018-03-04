@@ -108,6 +108,11 @@ impl GameState {
         self.positions[idx].as_mut()
     }
 
+    pub fn take_position(&mut self, id: Entity) -> Option<Point2> {
+        let idx = self.ent_lookup[&id];
+        self.positions[idx].take()
+    }
+
     pub fn get_zorder(&self, id: Entity) -> Option<&f32> {
         let idx = self.ent_lookup[&id];
         self.zorder[idx].as_ref()

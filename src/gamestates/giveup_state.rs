@@ -9,6 +9,7 @@ use table::Table;
 
 use super::GameWrapper;
 use super::main_state::MainState;
+use super::victory_state::VictoryState;
 
 pub struct GiveupState {
     pub resources: Resources,
@@ -35,7 +36,6 @@ impl EventHandler for GiveupState {
 
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         self.game.state.run_render(ctx, &self.resources)?;
 
         graphics::present(ctx);
@@ -45,6 +45,16 @@ impl EventHandler for GiveupState {
 
 impl From<MainState> for GiveupState {
     fn from(mut old: MainState) -> GiveupState {
+        old.game.animate_giveup();
+        GiveupState {
+            resources: old.resources,
+            game: old.game,
+        }
+    }
+}
+
+impl From<VictoryState> for GiveupState {
+    fn from(mut old: VictoryState) -> GiveupState {
         old.game.animate_giveup();
         GiveupState {
             resources: old.resources,

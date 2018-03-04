@@ -8,8 +8,10 @@ pub struct Game {
     pub state: GameState,
 
     flower_stack: Entity,
+    all_stacks: Vec<Entity>,
     game_stacks: Vec<Entity>,
     target_stacks: [Entity; 3],
+    dragon_stacks: [Entity; 3],
 }
 
 impl Game {
@@ -20,9 +22,9 @@ impl Game {
         state.new_entity().with_position(Point2::new(533.0, 137.0)).with_button(Button::new(Color::Green)).build();
         state.new_entity().with_position(Point2::new(533.0, 220.0)).with_button(Button::new(Color::White)).build();
 
-        state.new_entity().with_position(Point2::new(45.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
-        state.new_entity().with_position(Point2::new(197.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
-        state.new_entity().with_position(Point2::new(349.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
+        let r = state.new_entity().with_position(Point2::new(45.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
+        let s = state.new_entity().with_position(Point2::new(197.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
+        let t = state.new_entity().with_position(Point2::new(349.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
         let flower_stack = state.new_entity().with_position(Point2::new(614.0, 20.0)).with_stack(Stack::new(StackRole::Flower)).build();
         let x = state.new_entity().with_position(Point2::new(805.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
         let y = state.new_entity().with_position(Point2::new(957.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
@@ -39,8 +41,10 @@ impl Game {
         let mut game = Game {
             state,
             flower_stack,
+            all_stacks: vec!(a, b, c, d, e, f, g, h, r, s, t, flower_stack, x, y, z),
             game_stacks: vec!(a, b, c, d, e, f, g, h),
             target_stacks: [x, y, z],
+            dragon_stacks: [r, s, t],
         };
 
         game.animate_shuffle();
@@ -162,6 +166,37 @@ impl Game {
 
             let ani = Animation {target_pos, target_stack: None, start_delay: 0.0, time_left: 0.2, sound_start: Sounds::None, sound_stop: Sounds::None};
             self.state.animate(card, start_pos, 100.0 + z as f32, ani);
+        }
+    }
+
+    pub fn animate_victory(&mut self) {
+        let mut cards = Vec::with_capacity(40);
+
+        loop {
+            let mut empty = true;
+            for &e in &self.all_stacks {
+                let pos = *self.state.get_position(e).unwrap();
+                let stack = self.state.get_stack_mut(e).unwrap();
+                if let Some(card) = stack.pop_card() {
+                    empty = false;
+                    let cardpos = pos + stack.get_stackshift() * stack.len() as f32;
+                    cards.push((card, cardpos));
+                    continue
+                }
+            }
+            if empty { break }
+        }
+
+        for (z, (card, start_pos)) in cards.into_iter().enumerate() {
+
+            let mut direction = start_pos - Point2::new(640.0, 400.0);
+            let dist = direction.norm();
+            direction = direction / dist;
+
+            let target_pos = start_pos + Vector2::new(0.0, 800.0);
+
+            let ani = Animation {target_pos, target_stack: None, start_delay: 0.3 * z as f32, time_left: 3.0, sound_start: Sounds::None, sound_stop: Sounds::None};
+            self.state.animate(card, start_pos, 500.0 - z as f32, ani);
         }
     }
 }
