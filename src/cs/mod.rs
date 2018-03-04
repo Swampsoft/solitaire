@@ -6,6 +6,7 @@ use ggez::graphics::Point2;
 mod animation_systems;
 mod input_systems;
 mod render_systems;
+mod rule_systems;
 mod rules;
 pub mod types;
 
@@ -13,6 +14,7 @@ use resources::Resources;
 
 use self::animation_systems::*;
 use self::render_systems::*;
+use self::rule_systems::*;
 use self::types::*;
 
 type Component<T> = Vec<Option<T>>;
@@ -104,6 +106,7 @@ impl GameState {
     pub fn run_update(&mut self, dt: f32) -> bool {
         self.busy = false;
         self.busy |= self.animation_update_system(dt);
+        self.button_update_system();
         self.busy
     }
 

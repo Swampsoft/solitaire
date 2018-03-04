@@ -2,6 +2,24 @@ pub trait All<T> {
     fn all(self) -> T;
 }
 
+impl<'a, A> All<Option<&'a A>> for (&'a Option<A>) {
+    fn all(self) -> Option<&'a A> {
+        match self {
+            &Some(ref a) => Some(a),
+            _ => None
+        }
+    }
+}
+
+impl<'a, A> All<Option<&'a mut A>> for (&'a mut Option<A>) {
+    fn all(self) -> Option<&'a mut A> {
+        match self {
+            &mut Some(ref mut a) => Some(a),
+            _ => None
+        }
+    }
+}
+
 impl<'a, 'b, A, B> All<Option<(&'a A, &'b B)>> for (&'a Option<A>, &'b Option<B>) {
     fn all(self) -> Option<(&'a A, &'b B)> {
         match self {
@@ -127,6 +145,15 @@ for (&'a mut Option<A>, &'b mut Option<B>, &'c mut Option<C>, &'d mut Option<D>)
     fn all(self) -> Option<(&'a mut A, &'b mut B, &'c mut C, &'d mut D)> {
         match self {
             (&mut Some(ref mut a), &mut Some(ref mut b), &mut Some(ref mut c), &mut Some(ref mut d)) => Some((a, b, c, d)),
+            _ => None
+        }
+    }
+}
+
+impl<'a, 'b, A, B> All<Option<(&'a A, &'b B)>> for (&'a Option<A>, &'b B) {
+    fn all(self) -> Option<(&'a A, &'b B)> {
+        match self {
+            (&Some(ref a), ref b) => Some((a, b)),
             _ => None
         }
     }

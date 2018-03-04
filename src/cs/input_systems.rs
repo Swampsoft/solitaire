@@ -9,14 +9,38 @@ use super::types::*;
 
 impl GameState {
     pub fn button_click_system(&mut self, click_pos: Point2) {
-        let compound_iterator = self.positions.iter()
-            .zip(self.buttons.iter_mut())
-            .filter_map(|x| x.all());
-        for (p, b) in compound_iterator {
-            let dist = click_pos - p;
-            if dist.norm_squared() <= BUTTON_RADIUS_SQUARED {
-                b.state = ButtonState::Down;
+        let mut animation = Vec::new();
+        {
+            let compound_iterator = self.positions.iter()
+                .zip(self.buttons.iter_mut())
+                .filter_map(|x| x.all())
+                .filter(|&(_, ref b)| b.state == ButtonState::Active);
+            'outer:
+                for (p, b) in compound_iterator {
+                let dist = click_pos - p;
+                if dist.norm_squared() <= BUTTON_RADIUS_SQUARED {
+                    b.state = ButtonState::Down;
+                    let t = self.ent_lookup[&b.target_stack.unwrap()];
+                    let target_pos = self.positions[t].unwrap();
+                    for e in b.source_stacks.drain(..) {
+                        let s = self.ent_lookup[&e];
+                        let stack = self.stacks[s].as_mut().unwrap();
+                        let pos = &self.positions[s].unwrap();
+
+                        //self.stacks[t].as_mut().unwrap().push_card(c);
+
+                        let start_pos = pos + stack.get_stackshift() * (stack.len() - 1) as f32;
+                        stack.pop_card();
+
+                        let ani = Animation { target_pos, target_stack: b.target_stack, start_delay: 0.0, time_left: 0.1 };
+                        animation.push((start_pos, ani));
+                    }
+                    break 'outer
+                }
             }
+        }
+        for (start_pos, ani) in animation {
+            self.animate(Suite::FaceDown, start_pos, 100.0, ani);
         }
     }
 
@@ -43,12 +67,9 @@ impl GameState {
                     if mouse_pos.x >= card_pos.x && mouse_pos.x <= card_pos.x + CARD_WIDTH &&
                         mouse_pos.y >= card_pos.y && mouse_pos.y <= card_pos.y + CARD_HEIGHT {
 
-                        let substack = s.split(i);
-
-                        if rules::is_valid_sequence(substack.iter()) {
+                        if rules::is_valid_drag(s, i) {
+                            let substack = s.split(i);
                             hit = Some((card_pos, substack, *e));
-                        } else {
-                            s.extend(substack);
                         }
                         break 'outer  // there can be only one
                     }
@@ -88,14 +109,11 @@ impl GameState {
                     let bb_target = BoundingBox::new(p.x, q.x, p.y, q.y);
 
                     if bb_target.intersects(&bb_drag) {
-                        if rules::is_valid_drop(s.role, s.cards.last(),
-                                                d_stack.as_ref().unwrap().cards.first().unwrap(),
-                                                d_stack.as_ref().unwrap().len()) {
+                        if rules::is_valid_drop(s, d_stack.as_ref().unwrap()) {
                             s.extend(d_stack.take().unwrap());
                             break
                         }
                     }
-
                 }
             }
 

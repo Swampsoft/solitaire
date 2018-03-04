@@ -24,15 +24,32 @@ pub fn is_valid_sequence<'a, T: Iterator<Item=&'a Suite>>(cards: T) -> bool {
     true
 }
 
-pub fn is_valid_drop(role: StackRole, top_card: Option<&Suite>, base_card: &Suite, n_cards: usize) -> bool {
+pub fn is_valid_drag(stack: &Stack, idx: usize) -> bool {
+    match (stack.role, stack.top()) {
+        (_, None) => false,
+        (StackRole::Flower, _) => false,
+        (StackRole::Target, _) => false,
+        (StackRole::Dragon, Some(card)) => card != Suite::FaceDown,
+        (StackRole::Sorting, _) => is_valid_sequence(stack.cards[idx..].iter()),
+        (StackRole::Generic, _) |
+        (StackRole::Animation, _) => panic!("Attempt to drag from invalid stack")
+    }
+}
+
+pub fn is_valid_drop(target: &Stack, source: &Stack) -> bool {
     use self::Suite::*;
-    match (role, top_card, *base_card, n_cards) {
+
+    let top_card = target.top();
+    let base_card = source.cards[0];
+    let n_cards = source.len();
+
+    match (target.role, top_card, base_card, n_cards) {
         (StackRole::Dragon, None, _, 1) => true,
         (StackRole::Flower, None, Flower, 1) => true,
         (StackRole::Target, None, Number(1, _), 1) => true,
-        (StackRole::Target, Some(&Number(ln, lc)), Number(un, uc), 1) => lc == uc && ln + 1 == un,
+        (StackRole::Target, Some(Number(ln, lc)), Number(un, uc), 1) => lc == uc && ln + 1 == un,
         (StackRole::Sorting, None, _, _) => true,
-        (StackRole::Sorting, Some(&l), u, _) => is_valid_pair(l, u),
+        (StackRole::Sorting, Some(l), u, _) => is_valid_pair(l, u),
         (StackRole::Generic, _, _, _) |
         (StackRole::Animation, _, _, _) => panic!("Attempt to drop on invalid stack"),
         _ => false,

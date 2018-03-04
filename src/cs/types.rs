@@ -22,9 +22,12 @@ impl Entity {
     }
 }
 
+#[derive(Debug)]
 pub struct Button {
     pub color: Color,
     pub state: ButtonState,
+    pub target_stack: Option<Entity>,
+    pub source_stacks: Vec<Entity>,
 }
 
 impl Button {
@@ -32,11 +35,13 @@ impl Button {
         Button {
             color,
             state: ButtonState::Up,
+            target_stack: None,
+            source_stacks: Vec::new(),
         }
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Suite {
     FaceDown,
     Flower,
@@ -44,7 +49,7 @@ pub enum Suite {
     Number(u8, Color),
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum StackRole {
     Dragon,
     Flower,
@@ -68,11 +73,17 @@ impl Stack {
     }
 
     pub fn len(&self) -> usize { self.cards.len() }
+
     pub fn iter(&self) -> slice::Iter<Suite> {
         self.cards.iter()
     }
+
     pub fn iter_mut(&mut self) -> slice::IterMut<Suite> {
         self.cards.iter_mut()
+    }
+
+    pub fn top(&self) -> Option<Suite> {
+        self.cards.last().map(|s| *s)
     }
 
     pub fn push_card(&mut self, card: Suite) {

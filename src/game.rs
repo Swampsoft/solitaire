@@ -49,21 +49,21 @@ impl Game {
     pub fn shuffled_deck() -> Stack {
         let mut cards = Vec::with_capacity(40);
 
-        for i in 1..10 {
-            cards.push(Suite::Number(i, Color::Red));
-            cards.push(Suite::Number(i, Color::Green));
-            cards.push(Suite::Number(i, Color::White));
-        }
-
         for _ in 0..4 {
             cards.push(Suite::Dragon(Color::Red));
             cards.push(Suite::Dragon(Color::Green));
             cards.push(Suite::Dragon(Color::White));
         }
 
+        for i in 1..10 {
+            cards.push(Suite::Number(i, Color::Red));
+            cards.push(Suite::Number(i, Color::Green));
+            cards.push(Suite::Number(i, Color::White));
+        }
+
         cards.push(Suite::Flower);
 
-        thread_rng().shuffle(&mut cards);
+        //thread_rng().shuffle(&mut cards);
 
         Stack {
             cards,

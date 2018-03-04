@@ -47,7 +47,7 @@ impl RenderQueue {
 
     pub fn button_render_system(&self, ctx: &mut Context, res: &Resources,
                                 pos: &Component<Point2>, btn: &Component<Button>) -> GameResult<()> {
-        for (p, b) in pos.iter().zip(btn.iter()).filter_map(|x| x.all()) {
+        for (p, b) in pos.iter().zip(btn.iter()).filter_map(|x| -> Option<(_, &Button)> {x.all()}) {
             let img = &res.button_images[&(b.color, b.state)];
             img.draw(ctx, p - Vector2::new(img.width() as f32, img.height() as f32) / 2.0, 0.0)?;
             //graphics::circle(ctx, graphics::DrawMode::Line(1.0), self.pos, RADIUS, 0.1)?;
