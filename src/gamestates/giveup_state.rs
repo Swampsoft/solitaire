@@ -36,7 +36,7 @@ impl EventHandler for GiveupState {
 
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.game.state.run_render(ctx, &self.resources)?;
+        self.game.state.run_render(ctx, &mut self.resources)?;
 
         graphics::present(ctx);
         Ok(())

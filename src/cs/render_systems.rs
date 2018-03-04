@@ -40,9 +40,17 @@ impl RenderQueue {
         Ok(())
     }
 
-    pub fn background_render_system(&self, ctx: &mut Context, res: &Resources) -> GameResult<()> {
+    pub fn background_render_system(&self, ctx: &mut Context, res: &mut Resources) -> GameResult<()> {
         graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        graphics::draw(ctx, &res.table_image, Point2::new(0.0, 0.0), 0.0)
+        graphics::draw(ctx, &res.table_image, Point2::new(0.0, 0.0), 0.0)?;
+
+        graphics::set_color(ctx, graphics::Color::new(0.0, 0.0, 0.0, 1.0))?;
+        let txt = format!("Win Count: {}", res.wins());
+        let text = res.get_text(ctx, &txt)?;
+        let pos = graphics::Point2::new(0.0, 806.0 - text.height() as f32);
+        graphics::draw(ctx, text,pos, 0.0)?;
+        
+        Ok(())
     }
 
     pub fn button_render_system(&self, ctx: &mut Context, res: &Resources,

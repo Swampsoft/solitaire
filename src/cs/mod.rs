@@ -140,7 +140,7 @@ impl GameState {
         self.busy
     }
 
-    pub fn run_render(&mut self, ctx: &mut Context, res: &Resources) -> GameResult<()> {
+    pub fn run_render(&mut self, ctx: &mut Context, res: &mut Resources) -> GameResult<()> {
         self.render_queue.background_render_system(ctx, res)?;
         self.render_queue.button_render_system(ctx, res, &self.positions, &self.buttons)?;
         self.render_queue.stack_render_system(ctx, res, &self.positions, &self.stacks, &self.zorder)?;

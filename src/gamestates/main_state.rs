@@ -60,7 +60,7 @@ impl EventHandler for MainState  {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.game.state.run_render(ctx, &self.resources)?;
+        self.game.state.run_render(ctx, &mut self.resources)?;
 
         if let Some(ref stack) = self.dragging {
             stack.draw(ctx, &self.resources)?;

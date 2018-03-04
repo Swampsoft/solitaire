@@ -59,7 +59,7 @@ impl EventHandler for WelcomeState {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.game.state.run_render(ctx, &self.resources)?;
+        self.game.state.run_render(ctx, &mut self.resources)?;
 
         //graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         //self.table.draw(ctx, &mut self.resources)?;
