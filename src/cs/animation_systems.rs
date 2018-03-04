@@ -40,6 +40,7 @@ impl GameState {
                 let tidx = self.ent_lookup[&target];
                 let card = self.stacks[idx].take().unwrap().pop_card().unwrap();
                 self.stacks[tidx].as_mut().unwrap().push_card(card);
+                self.dirty = true;
             }
             self.remove_entity(e);
         }

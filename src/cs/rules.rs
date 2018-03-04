@@ -37,11 +37,17 @@ pub fn is_valid_drag(stack: &Stack, idx: usize) -> bool {
 }
 
 pub fn is_valid_drop(target: &Stack, source: &Stack) -> bool {
-    use self::Suite::*;
-
     let top_card = target.top();
     let base_card = source.cards[0];
     let n_cards = source.len();
+
+    is_valid_move(target, base_card, n_cards)
+}
+
+pub fn is_valid_move(target: &Stack, base_card: Suite, n_cards: usize) -> bool {
+    use self::Suite::*;
+
+    let top_card = target.top();
 
     match (target.role, top_card, base_card, n_cards) {
         (StackRole::Dragon, None, _, 1) => true,

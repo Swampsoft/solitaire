@@ -9,6 +9,10 @@ use super::types::*;
 
 impl GameState {
     pub fn button_click_system(&mut self, click_pos: Point2) {
+        if self.busy() {
+            return
+        }
+
         let mut animation = Vec::new();
         {
             let compound_iterator = self.positions.iter()
@@ -41,10 +45,15 @@ impl GameState {
         }
         for (start_pos, ani) in animation {
             self.animate(Suite::FaceDown, start_pos, 100.0, ani);
+            self.dirty = true;
         }
     }
 
     pub fn begin_drag_system(&mut self, mouse_pos: Point2) {
+        if self.busy() {
+            return
+        }
+
         if self.drag_lock.is_some() {
             return
         }
@@ -87,12 +96,20 @@ impl GameState {
     }
 
     pub fn do_drag_system(&mut self, mouse_rel: Vector2) {
+        if self.busy() {
+            return
+        }
+
         if let Some((_, ent)) = self.drag_lock {
             *self.get_position_mut(ent).unwrap() += mouse_rel;
         }
     }
 
     pub fn done_drag_system(&mut self) {
+        if self.busy() {
+            return
+        }
+
         if let Some((src, drg)) = self.drag_lock.take() {
             let idx = self.ent_lookup[&drg];
             let mut d_stack = self.stacks[idx].take();
@@ -111,6 +128,7 @@ impl GameState {
                     if bb_target.intersects(&bb_drag) {
                         if rules::is_valid_drop(s, d_stack.as_ref().unwrap()) {
                             s.extend(d_stack.take().unwrap());
+                            self.dirty = true;
                             break
                         }
                     }

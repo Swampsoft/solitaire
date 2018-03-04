@@ -33,6 +33,7 @@ pub struct GameState {
     next_id: usize,
 
     busy: bool,
+    dirty: bool,
     render_queue: RenderQueue,
 
     drag_lock: Option<(Entity, Entity)>
@@ -107,6 +108,7 @@ impl GameState {
         self.busy = false;
         self.busy |= self.animation_update_system(dt);
         self.button_update_system();
+        self.auto_move_system();
         self.busy
     }
 
