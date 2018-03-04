@@ -129,4 +129,39 @@ impl Game {
             start_delay += 0.1;
         }
     }
+
+    pub fn animate_giveup(&mut self) {
+        let mut cards = Vec::with_capacity(40);
+
+        for &e in self.state.iter() {
+            let pos = match self.state.get_position(e) {
+                Some(p) => p,
+                None => continue,
+            };
+
+            let stack = match self.state.get_stack(e) {
+                Some(s) => s,
+                None => continue,
+            };
+
+            for (i, &card) in stack.iter().enumerate() {
+                let cardpos = pos + stack.get_stackshift() * i as f32;
+                cards.push((card, cardpos));
+            }
+        }
+
+        self.state.clear();
+
+        for (z, (card, start_pos)) in cards.into_iter().enumerate() {
+
+            let mut direction = start_pos - Point2::new(640.0, 400.0);
+            let dist = direction.norm();
+            direction = direction / dist;
+
+            let target_pos = start_pos + direction * 800.0;
+
+            let ani = Animation {target_pos, target_stack: None, start_delay: 0.0, time_left: 0.2, sound_start: Sounds::None, sound_stop: Sounds::None};
+            self.state.animate(card, start_pos, 100.0 + z as f32, ani);
+        }
+    }
 }

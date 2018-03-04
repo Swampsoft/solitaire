@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::slice;
 
 use ggez::{Context, GameResult};
 use ggez::graphics::Point2;
@@ -63,6 +64,28 @@ impl GameState {
         self.animations.swap_remove(idx);
 
         self.entities.swap_remove(idx);
+    }
+
+    pub fn clear(&mut self) {
+        self.entities.clear();
+        self.ent_lookup.clear();
+
+        self.stacks.clear();
+        self.positions.clear();
+        self.zorder.clear();
+        self.buttons.clear();
+        self.animations.clear();
+
+        self.next_id = 0;
+
+        self.busy = false;
+        self.dirty = false;
+
+        self.drag_lock = None;
+    }
+
+    pub fn iter(&self) -> slice::Iter<Entity> {
+        self.entities.iter()
     }
 
     pub fn get_stack(&self, id: Entity) -> Option<&Stack> {
