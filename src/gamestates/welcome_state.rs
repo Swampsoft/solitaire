@@ -9,10 +9,8 @@ use super::GameWrapper;
 use super::victory_state::VictoryState;
 use super::giveup_state::GiveupState;
 
-use cs::GameState;
 use game::Game;
 use resources::Resources;
-use table::Table;
 
 pub struct WelcomeState {
     pub resources: Resources,
@@ -23,8 +21,6 @@ pub struct WelcomeState {
 
 impl WelcomeState {
     pub fn new(ctx: &mut Context) -> GameResult<Self> {
-        let mut table = Table::new();
-        table.new_game();
         Ok(WelcomeState {
             resources: Resources::new(ctx)?,
             move_on: false,
@@ -44,9 +40,6 @@ impl WelcomeState {
 
 impl EventHandler for WelcomeState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        //let t = timer::get_time_since_start(ctx);
-        //self.table.update(t, &mut self.resources);
-
         if !self.ready {
             // skip first frame because it has a super high delta-time
             self.ready = true;
@@ -60,9 +53,6 @@ impl EventHandler for WelcomeState {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         self.game.state.run_render(ctx, &mut self.resources)?;
-
-        //graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        //self.table.draw(ctx, &mut self.resources)?;
 
         graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         let text = self.resources.get_text(ctx, "Click anywhere to start a new game.")?;
@@ -82,7 +72,7 @@ impl EventHandler for WelcomeState {
 }
 
 impl From<VictoryState> for WelcomeState {
-    fn from(mut old: VictoryState) -> WelcomeState {
+    fn from(old: VictoryState) -> WelcomeState {
         WelcomeState {
             resources: old.resources,
             move_on: false,
@@ -93,7 +83,7 @@ impl From<VictoryState> for WelcomeState {
 }
 
 impl From<GiveupState> for WelcomeState {
-    fn from(mut old: GiveupState) -> WelcomeState {
+    fn from(old: GiveupState) -> WelcomeState {
         WelcomeState {
             resources: old.resources,
             move_on: false,

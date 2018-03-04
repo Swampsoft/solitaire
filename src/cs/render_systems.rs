@@ -6,12 +6,11 @@ use ggez::{Context, GameResult};
 use ggez::graphics;
 use ggez::graphics::{Drawable, Point2, Vector2};
 
-use all::All;
+use utils::all::All;
 use resources::Resources;
+use types::*;
 
 use super::Component;
-use super::GameState;
-use super::types::*;
 
 
 enum DrawCommand {
@@ -25,16 +24,10 @@ pub struct RenderQueue {
 
 
 impl RenderQueue {
-    pub fn new() -> RenderQueue {
-        RenderQueue {
-            queue: BinaryHeap::new(),
-        }
-    }
-
     pub fn render(&mut self, ctx: &mut Context, res: &Resources) -> GameResult<()> {
         while let Some(cmd) = self.queue.pop() {
             match cmd {
-                DrawCommand::Card{z, pos, suite} => self.render_card(pos, suite, ctx, res)?,
+                DrawCommand::Card{pos, suite, ..} => self.render_card(pos, suite, ctx, res)?,
             }
         }
         Ok(())
@@ -49,12 +42,13 @@ impl RenderQueue {
         let text = res.get_text(ctx, &txt)?;
         let pos = graphics::Point2::new(0.0, 806.0 - text.height() as f32);
         graphics::draw(ctx, text,pos, 0.0)?;
-        
+
         Ok(())
     }
 
     pub fn button_render_system(&self, ctx: &mut Context, res: &Resources,
                                 pos: &Component<Point2>, btn: &Component<Button>) -> GameResult<()> {
+        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         for (p, b) in pos.iter().zip(btn.iter()).filter_map(|x| -> Option<(_, &Button)> {x.all()}) {
             let img = &res.button_images[&(b.color, b.state)];
             img.draw(ctx, p - Vector2::new(img.width() as f32, img.height() as f32) / 2.0, 0.0)?;
@@ -63,8 +57,7 @@ impl RenderQueue {
         Ok(())
     }
 
-    pub fn stack_render_system(&mut self, ctx: &mut Context, res: &Resources,
-                               pos: &Component<Point2>, stk: &Component<Stack>, zs: &Component<f32>) -> GameResult<()> {
+    pub fn stack_render_system(&mut self, pos: &Component<Point2>, stk: &Component<Stack>, zs: &Component<f32>) -> GameResult<()> {
         let compound_iterator = pos.iter()
             .zip(stk.iter())
             .zip(zs.iter())
@@ -75,9 +68,7 @@ impl RenderQueue {
 
             for (i, card) in s.iter().enumerate() {
                 let z = z + 0.1 * i as f32;
-                graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-                //res.card_front.draw(ctx, pos, 0.0)?;
-                //self.render_card(pos, *card, ctx, res)?;
+                //graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
                 self.queue.push(DrawCommand::Card{z, pos: pos, suite: *card});
                 pos += dpos;
             }

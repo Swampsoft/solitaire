@@ -1,11 +1,8 @@
 
-use ggez::graphics::*;
+use utils::all::All;
+use types::*;
 
-use all::All;
-
-use super::Component;
 use super::GameState;
-use super::types::*;
 
 use resources::Resources;
 

@@ -9,17 +9,12 @@ extern crate sdl2;
 
 mod gamestates;
 
-mod all;
-mod animation;
-mod bbox;
-mod button;
 mod cs;
-mod cards;
-mod cardstack;
 mod game;
 mod resources;
 mod rules;
-mod table;
+mod types;
+mod utils;
 
 use std::env;
 

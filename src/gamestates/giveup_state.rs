@@ -5,7 +5,6 @@ use ggez::timer;
 
 use game::Game;
 use resources::Resources;
-use table::Table;
 
 use super::GameWrapper;
 use super::main_state::MainState;

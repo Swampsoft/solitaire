@@ -2,7 +2,7 @@
 use rand::{thread_rng, Rng};
 
 use cs::GameState;
-use cs::types::*;
+use types::*;
 
 pub struct Game {
     pub state: GameState,
@@ -11,7 +11,7 @@ pub struct Game {
     all_stacks: Vec<Entity>,
     game_stacks: Vec<Entity>,
     target_stacks: [Entity; 3],
-    dragon_stacks: [Entity; 3],
+    //dragon_stacks: [Entity; 3],
 }
 
 impl Game {
@@ -44,7 +44,7 @@ impl Game {
             all_stacks: vec!(a, b, c, d, e, f, g, h, r, s, t, flower_stack, x, y, z),
             game_stacks: vec!(a, b, c, d, e, f, g, h),
             target_stacks: [x, y, z],
-            dragon_stacks: [r, s, t],
+            //dragon_stacks: [r, s, t],
         };
 
         game.animate_shuffle();
@@ -74,7 +74,7 @@ impl Game {
 
         cards.push(Suite::Flower);
 
-        //thread_rng().shuffle(&mut cards);
+        thread_rng().shuffle(&mut cards);
 
         Stack {
             cards,
@@ -188,11 +188,6 @@ impl Game {
         }
 
         for (z, (card, start_pos)) in cards.into_iter().enumerate() {
-
-            let mut direction = start_pos - Point2::new(640.0, 400.0);
-            let dist = direction.norm();
-            direction = direction / dist;
-
             let target_pos = start_pos + Vector2::new(0.0, 800.0);
 
             let ani = Animation {target_pos, target_stack: None, start_delay: 0.3 * z as f32, time_left: 3.0, sound_start: Sounds::None, sound_stop: Sounds::None};

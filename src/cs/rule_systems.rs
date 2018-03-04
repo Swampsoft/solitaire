@@ -1,10 +1,9 @@
 
-use all::All;
+use utils::all::All;
+use rules;
+use types::*;
 
-use super::Component;
 use super::GameState;
-use super::rules;
-use super::types::*;
 
 impl GameState {
     pub fn button_update_system(&mut self) {
@@ -25,7 +24,7 @@ impl GameState {
                     None => true,                                       // or empty stack
                     _ => false,
                 })
-                .map(|(stack, e)| *e)
+                .map(|(_, e)| *e)
                 .next();
 
             b.target_stack = target;
@@ -42,7 +41,7 @@ impl GameState {
                     Suite::Dragon(col) => b.color == col,
                     _ => false,
                 })
-                .map(|(stack, e)| *e)
+                .map(|(_, e)| *e)
                 .collect::<Vec<_>>();
 
             let n = sources.len();

@@ -1,9 +1,9 @@
 use std::slice;
 
+use ggez::{Context, GameResult};
+use ggez::graphics;
 pub use ggez::graphics::{Point2, Vector2};
 
-pub use button::ButtonState;
-pub use cards::Color;
 pub use resources::Sounds;
 
 
@@ -21,6 +21,37 @@ impl Entity {
     pub fn new(id: usize) -> Entity {
         Entity(id)
     }
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum Color {
+    Red,
+    Green,
+    White
+}
+
+impl Color {
+    pub fn set_font_color(&self, ctx: &mut Context) -> GameResult<()> {
+        match *self {
+            Color::Red => graphics::set_color(ctx, graphics::Color::new(0.7, 0.2, 0.1, 1.0)),
+            Color::Green => graphics::set_color(ctx, graphics::Color::new(0.1, 0.4, 0.3, 1.0)),
+            Color::White => graphics::set_color(ctx, graphics::Color::new(0.1, 0.1, 0.1, 1.0)),
+        }
+    }
+    pub fn set_icon_color(&self, ctx: &mut Context) -> GameResult<()> {
+        match *self {
+            Color::Red => graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0)),
+            Color::Green => graphics::set_color(ctx, graphics::Color::new(0.1, 0.4, 0.3, 1.0)),
+            Color::White => graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0)),
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+pub enum ButtonState {
+    Active,
+    Up,
+    Down,
 }
 
 #[derive(Debug)]
@@ -77,10 +108,6 @@ impl Stack {
 
     pub fn iter(&self) -> slice::Iter<Suite> {
         self.cards.iter()
-    }
-
-    pub fn iter_mut(&mut self) -> slice::IterMut<Suite> {
-        self.cards.iter_mut()
     }
 
     pub fn top(&self) -> Option<Suite> {

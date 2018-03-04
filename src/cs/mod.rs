@@ -8,15 +8,11 @@ mod animation_systems;
 mod input_systems;
 mod render_systems;
 mod rule_systems;
-mod rules;
-pub mod types;
 
 use resources::Resources;
+use types::*;
 
-use self::animation_systems::*;
 use self::render_systems::*;
-use self::rule_systems::*;
-use self::types::*;
 
 type Component<T> = Vec<Option<T>>;
 
@@ -41,11 +37,6 @@ pub struct GameState {
 }
 
 impl GameState {
-    pub fn new() -> GameState {
-        let mut state = GameState::default();
-        state
-    }
-
     pub fn new_entity(&mut self) -> EntityBuilder {
         EntityBuilder::new(self)
     }
@@ -108,26 +99,6 @@ impl GameState {
         self.positions[idx].as_mut()
     }
 
-    pub fn take_position(&mut self, id: Entity) -> Option<Point2> {
-        let idx = self.ent_lookup[&id];
-        self.positions[idx].take()
-    }
-
-    pub fn get_zorder(&self, id: Entity) -> Option<&f32> {
-        let idx = self.ent_lookup[&id];
-        self.zorder[idx].as_ref()
-    }
-
-    pub fn get_button(&self, id: Entity) -> Option<&Button> {
-        let idx = self.ent_lookup[&id];
-        self.buttons[idx].as_ref()
-    }
-
-    pub fn get_animation(&self, id: Entity) -> Option<&Animation> {
-        let idx = self.ent_lookup[&id];
-        self.animations[idx].as_ref()
-    }
-
     pub fn busy(&self) -> bool {
         self.busy
     }
@@ -143,7 +114,7 @@ impl GameState {
     pub fn run_render(&mut self, ctx: &mut Context, res: &mut Resources) -> GameResult<()> {
         self.render_queue.background_render_system(ctx, res)?;
         self.render_queue.button_render_system(ctx, res, &self.positions, &self.buttons)?;
-        self.render_queue.stack_render_system(ctx, res, &self.positions, &self.stacks, &self.zorder)?;
+        self.render_queue.stack_render_system(&self.positions, &self.stacks, &self.zorder)?;
         self.render_queue.render(ctx, res)?;
         Ok(())
     }
@@ -154,8 +125,7 @@ impl GameState {
         self.button_click_system(pos);
     }
 
-    pub fn handle_mouse_button_up(&mut self, x: i32, y: i32, res: &Resources) {
-        let pos = Point2::new(x as f32, y as f32);
+    pub fn handle_mouse_button_up(&mut self, _x: i32, _y: i32, res: &Resources) {
         self.done_drag_system(res);
     }
 

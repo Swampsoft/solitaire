@@ -17,7 +17,7 @@ impl BoundingBox {
         }
     }
 
-    pub fn new_empty() -> BoundingBox {
+    /*pub fn new_empty() -> BoundingBox {
         BoundingBox::new(f32::INFINITY, -f32::INFINITY, f32::INFINITY, -f32::INFINITY)
     }
 
@@ -35,7 +35,7 @@ impl BoundingBox {
 
     pub fn is_hit(&self, x: f32, y: f32) -> bool {
         x >= self.topleft.x && y >= self.topleft.y && x <= self.bottomright.x && y <= self.bottomright.y
-    }
+    }*/
 
     pub fn intersects(&self, other: &BoundingBox) -> bool {
         let ax = self.topleft.x + self.bottomright.x;

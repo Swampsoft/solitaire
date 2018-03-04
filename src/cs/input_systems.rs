@@ -1,11 +1,10 @@
 
-use all::All;
-use bbox::BoundingBox;
+use utils::all::All;
+use utils::bbox::BoundingBox;
+use rules;
+use types::*;
 
-use super::Component;
 use super::GameState;
-use super::rules;
-use super::types::*;
 
 use resources::Resources;
 
