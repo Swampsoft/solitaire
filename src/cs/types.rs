@@ -4,6 +4,7 @@ pub use ggez::graphics::{Point2, Vector2};
 
 pub use button::ButtonState;
 pub use cards::Color;
+pub use resources::Sounds;
 
 
 pub const CARD_WIDTH: f32 = 123.0;
@@ -123,4 +124,7 @@ pub struct Animation {
     pub time_left: f32,
     pub target_pos: Point2,
     pub target_stack: Option<Entity>,
+
+    pub sound_start: Sounds,
+    pub sound_stop: Sounds,
 }

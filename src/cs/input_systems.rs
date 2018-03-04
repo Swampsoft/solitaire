@@ -7,6 +7,8 @@ use super::GameState;
 use super::rules;
 use super::types::*;
 
+use resources::Resources;
+
 impl GameState {
     pub fn button_click_system(&mut self, click_pos: Point2) {
         if self.busy() {
@@ -26,6 +28,7 @@ impl GameState {
                     b.state = ButtonState::Down;
                     let t = self.ent_lookup[&b.target_stack.unwrap()];
                     let target_pos = self.positions[t].unwrap();
+                    let mut sound_start = Sounds::Sweep;
                     for e in b.source_stacks.drain(..) {
                         let s = self.ent_lookup[&e];
                         let stack = self.stacks[s].as_mut().unwrap();
@@ -36,8 +39,9 @@ impl GameState {
                         let start_pos = pos + stack.get_stackshift() * (stack.len() - 1) as f32;
                         stack.pop_card();
 
-                        let ani = Animation { target_pos, target_stack: b.target_stack, start_delay: 0.0, time_left: 0.1 };
+                        let ani = Animation { target_pos, target_stack: b.target_stack, start_delay: 0.0, time_left: 0.3, sound_start, sound_stop: Sounds::None };
                         animation.push((start_pos, ani));
+                        sound_start = Sounds::None;  // play only one sound for all cards
                     }
                     break 'outer
                 }
@@ -49,7 +53,7 @@ impl GameState {
         }
     }
 
-    pub fn begin_drag_system(&mut self, mouse_pos: Point2) {
+    pub fn begin_drag_system(&mut self, mouse_pos: Point2, res: &Resources) {
         if self.busy() {
             return
         }
@@ -80,6 +84,7 @@ impl GameState {
                             let substack = s.split(i);
                             hit = Some((card_pos, substack, *e));
                         }
+                        res.pickup_sound.play().unwrap();
                         break 'outer  // there can be only one
                     }
                 }
@@ -105,12 +110,14 @@ impl GameState {
         }
     }
 
-    pub fn done_drag_system(&mut self) {
+    pub fn done_drag_system(&mut self, res: &Resources) {
         if self.busy() {
             return
         }
 
         if let Some((src, drg)) = self.drag_lock.take() {
+            res.place_sound.play().unwrap();
+
             let idx = self.ent_lookup[&drg];
             let mut d_stack = self.stacks[idx].take();
             let pos = self.positions[idx].take().unwrap();

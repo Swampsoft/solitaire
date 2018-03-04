@@ -52,7 +52,7 @@ impl EventHandler for WelcomeState {
             self.ready = true;
         } else {
             let dt = timer::duration_to_f64(timer::get_delta(ctx)) as f32;
-            self.game.state.run_update(dt);
+            self.game.state.run_update(dt, &mut self.resources);
         }
 
         Ok(())

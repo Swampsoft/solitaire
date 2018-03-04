@@ -10,13 +10,13 @@ use ggez::*;
 use button;
 use cards;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Sounds {
     None,
     Pickup,
     Place,
     Sweep,
-    //Deal,
+    Deal,
 }
 
 pub struct Resources {
@@ -153,7 +153,7 @@ impl Resources {
             Sounds::None => return,
             Sounds::Pickup => self.pickup_sound.play(),
             Sounds::Place => self.place_sound.play(),
-            //Sounds::Deal => self.deal_sound.play(),
+            Sounds::Deal => self.deal_sound.play(),
             Sounds::Sweep => self.sweep_sound.play(),
         }.unwrap();
     }

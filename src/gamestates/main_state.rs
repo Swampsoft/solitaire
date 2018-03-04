@@ -23,12 +23,11 @@ pub struct MainState {
 
 impl MainState {
     pub fn next_state(self) -> GameWrapper{
-        /*if rules::check_wincondition(&self.table) {
+        if self.game.check_win_condition() {
             GameWrapper::Victory(self.into())
         } else {
             GameWrapper::GiveUp(self.into())
-        }*/
-        GameWrapper::Victory(self.into())
+        }
     }
 }
 
@@ -40,22 +39,22 @@ impl EventHandler for MainState  {
         }
 
         let dt = timer::duration_to_f64(timer::get_delta(ctx)) as f32;
-        self.game.state.run_update(dt);
+        self.game.state.run_update(dt, &mut self.resources);
 
         /*let t = timer::get_time_since_start(ctx);
         self.table.update(t, &mut self.resources);
 
         if !self.table.game_enabled() {
             return Ok(())
-        }
+        }*/
 
-        if rules::check_wincondition(&mut self.table) {
+        if self.game.check_win_condition() {
             if !self.win_counted {
                 self.resources.add_win(ctx);
                 self.win_counted = true;
             }
             ctx.quit()?;
-        }*/
+        }
 
         Ok(())
     }
@@ -72,7 +71,7 @@ impl EventHandler for MainState  {
     }
 
     fn mouse_button_down_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: i32, y: i32) {
-        self.game.state.handle_mouse_button_down(x, y);
+        self.game.state.handle_mouse_button_down(x, y, &self.resources);
         /*if !self.table.game_enabled() {
             return
         }
@@ -90,7 +89,7 @@ impl EventHandler for MainState  {
     }
 
     fn mouse_button_up_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: i32, y: i32) {
-        self.game.state.handle_mouse_button_up(x, y);
+        self.game.state.handle_mouse_button_up(x, y, &self.resources);
         /*if !self.table.game_enabled() {
             return
         }

@@ -104,9 +104,9 @@ impl GameState {
         self.busy
     }
 
-    pub fn run_update(&mut self, dt: f32) -> bool {
+    pub fn run_update(&mut self, dt: f32, res: &mut Resources) -> bool {
         self.busy = false;
-        self.busy |= self.animation_update_system(dt);
+        self.busy |= self.animation_update_system(dt, res);
         self.button_update_system();
         self.auto_move_system();
         self.busy
@@ -120,15 +120,15 @@ impl GameState {
         Ok(())
     }
 
-    pub fn handle_mouse_button_down(&mut self, x: i32, y: i32) {
+    pub fn handle_mouse_button_down(&mut self, x: i32, y: i32, res: &Resources) {
         let pos = Point2::new(x as f32, y as f32);
-        self.begin_drag_system(pos);
+        self.begin_drag_system(pos, res);
         self.button_click_system(pos);
     }
 
-    pub fn handle_mouse_button_up(&mut self, x: i32, y: i32) {
+    pub fn handle_mouse_button_up(&mut self, x: i32, y: i32, res: &Resources) {
         let pos = Point2::new(x as f32, y as f32);
-        self.done_drag_system();
+        self.done_drag_system(res);
     }
 
     pub fn handle_mouse_move(&mut self, xrel: i32, yrel: i32) {

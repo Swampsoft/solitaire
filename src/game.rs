@@ -9,6 +9,7 @@ pub struct Game {
 
     flower_stack: Entity,
     game_stacks: Vec<Entity>,
+    target_stacks: [Entity; 3],
 }
 
 impl Game {
@@ -23,9 +24,9 @@ impl Game {
         state.new_entity().with_position(Point2::new(197.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
         state.new_entity().with_position(Point2::new(349.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
         let flower_stack = state.new_entity().with_position(Point2::new(614.0, 20.0)).with_stack(Stack::new(StackRole::Flower)).build();
-        state.new_entity().with_position(Point2::new(805.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
-        state.new_entity().with_position(Point2::new(957.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
-        state.new_entity().with_position(Point2::new(1109.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
+        let x = state.new_entity().with_position(Point2::new(805.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
+        let y = state.new_entity().with_position(Point2::new(957.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
+        let z = state.new_entity().with_position(Point2::new(1109.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
         let a = state.new_entity().with_position(Point2::new(45.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
         let b = state.new_entity().with_position(Point2::new(197.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
         let c = state.new_entity().with_position(Point2::new(349.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
@@ -39,11 +40,17 @@ impl Game {
             state,
             flower_stack,
             game_stacks: vec!(a, b, c, d, e, f, g, h),
+            target_stacks: [x, y, z],
         };
 
         game.animate_shuffle();
 
         game
+    }
+
+    pub fn check_win_condition(&self) -> bool {
+        self.game_stacks.iter().all(|&s| self.state.get_stack(s).unwrap().len() == 0)
+        && self.target_stacks.iter().all(|&s| self.state.get_stack(s).unwrap().len() == 9)
     }
 
     pub fn shuffled_deck() -> Stack {
@@ -80,7 +87,12 @@ impl Game {
             let i = 1.0 + 0.1 * (n as f32);
             let start_pos = stack_pos - shift * i * (stack_pos.y + CARD_HEIGHT) / shift.y;
             let target_pos = stack_pos + shift * n as f32;
-            let ani = Animation { target_pos, target_stack, start_delay: 0.0, time_left: 0.1 * i };
+            let sound_stop = if n % 10 == 0 {
+                Sounds::Place
+            } else {
+                Sounds::None
+            };
+            let ani = Animation { target_pos, target_stack, start_delay: 0.0, time_left: 0.1 * i, sound_start: Sounds::None, sound_stop };
             self.state.animate(Suite::FaceDown, start_pos, 100.0 + n as f32, ani);
         }
     }
@@ -104,7 +116,7 @@ impl Game {
 
             let start_pos = fpos + fshift * height;
 
-            let ani = Animation {target_pos, target_stack: Some(target_stack), start_delay, time_left: 0.2};
+            let ani = Animation {target_pos, target_stack: Some(target_stack), start_delay, time_left: 0.2, sound_start: Sounds::Place, sound_stop: Sounds::None};
             self.state.animate(card, start_pos, 100.0 + z, ani);
 
             s += 1;

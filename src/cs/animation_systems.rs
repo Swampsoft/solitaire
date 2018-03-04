@@ -7,8 +7,10 @@ use super::Component;
 use super::GameState;
 use super::types::*;
 
+use resources::Resources;
+
 impl GameState {
-    pub fn animation_update_system(&mut self, dt: f32) -> bool {
+    pub fn animation_update_system(&mut self, dt: f32, res: &mut Resources) -> bool {
         let mut busy = false;
 
         let mut finished = Vec::new();
@@ -18,6 +20,7 @@ impl GameState {
             .zip(self.entities.iter())
             .filter_map(|x| x.all()) {
             if a.time_left > 0.0 {
+                busy = true;
                 let dt = if a.start_delay > 0.0 {
                     let step = dt.min(a.start_delay);
                     a.start_delay -= step;
@@ -25,12 +28,16 @@ impl GameState {
                 } else {
                     dt
                 };
+                if a.sound_start != Sounds::None && a.start_delay <= 0.0{
+                    res.play_sound(a.sound_start);
+                    a.sound_start = Sounds::None;
+                }
                 let time_step = dt.min(a.time_left);
                 *p += (a.target_pos - *p) * time_step / a.time_left;
                 a.time_left -= dt;
-                busy = true;
             } else {
                 finished.push(*e);
+                res.play_sound(a.sound_stop);
             }
         }
 

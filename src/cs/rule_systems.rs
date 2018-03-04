@@ -8,7 +8,7 @@ use super::types::*;
 
 impl GameState {
     pub fn button_update_system(&mut self) {
-        if self.busy() {
+        if !self.dirty || self.busy() {
             return
         }
 
@@ -140,7 +140,7 @@ impl GameState {
                 target_pos = t_pos + t_stack.get_stackshift() * t_stack.len() as f32;
             }
 
-            let ani = Animation {target_pos, target_stack, start_delay: 0.0, time_left: 0.1};
+            let ani = Animation {target_pos, target_stack, start_delay: 0.0, time_left: 0.3, sound_start: Sounds::Sweep, sound_stop: Sounds::None};
             self.animate(card, start_pos, 100.0, ani);
         }
     }
