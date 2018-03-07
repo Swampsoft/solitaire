@@ -58,8 +58,7 @@ pub enum ButtonState {
 pub struct Button {
     pub color: Color,
     pub state: ButtonState,
-    pub target_stack: Option<Entity>,
-    pub source_stacks: Vec<Entity>,
+    pub stacks: Option<(Entity, [Entity; 4])>,
 }
 
 impl Button {
@@ -67,8 +66,7 @@ impl Button {
         Button {
             color,
             state: ButtonState::Up,
-            target_stack: None,
-            source_stacks: Vec::new(),
+            stacks: None,
         }
     }
 }
@@ -91,6 +89,7 @@ pub enum StackRole {
     Animation,
 }
 
+#[derive(Clone)]
 pub struct Stack {
     pub cards: Vec<Suite>,
     pub role: StackRole,

@@ -25,20 +25,19 @@ impl GameState {
                 let dist = click_pos - p;
                 if dist.norm_squared() <= BUTTON_RADIUS_SQUARED {
                     b.state = ButtonState::Down;
-                    let t = self.ent_lookup[&b.target_stack.unwrap()];
+                    let (target_stack, source_stacks) = b.stacks.unwrap();
+                    let t = self.ent_lookup[&target_stack];
                     let target_pos = self.positions[t].unwrap();
                     let mut sound_start = Sounds::Sweep;
-                    for e in b.source_stacks.drain(..) {
+                    for e in source_stacks.into_iter() {
                         let s = self.ent_lookup[&e];
                         let stack = self.stacks[s].as_mut().unwrap();
                         let pos = &self.positions[s].unwrap();
 
-                        //self.stacks[t].as_mut().unwrap().push_card(c);
-
                         let start_pos = pos + stack.get_stackshift() * (stack.len() - 1) as f32;
                         stack.pop_card();
 
-                        let ani = Animation { target_pos, target_stack: b.target_stack, start_delay: 0.0, time_left: 0.3, sound_start, sound_stop: Sounds::None };
+                        let ani = Animation { target_pos, target_stack: Some(target_stack), start_delay: 0.0, time_left: 0.3, sound_start, sound_stop: Sounds::None };
                         animation.push((start_pos, ani));
                         sound_start = Sounds::None;  // play only one sound for all cards
                     }

@@ -61,6 +61,80 @@ pub fn is_valid_move(target: &Stack, base_card: Suite, n_cards: usize) -> bool {
     }
 }
 
+pub fn check_button<'a, I: Iterator<Item=&'a Stack> + Clone>(color: Color, stacks: I)  -> Option<(usize, [usize; 4])> {
+    let target = stacks.clone().enumerate()
+        .filter(|&(_, ref stack)| stack.role == StackRole::Dragon)
+        .filter(|&(_, ref stack)| match stack.top() {
+            Some(Suite::Dragon(col)) => col == color,       // only dragons of right color
+            None => true,                                   // or empty stack
+            _ => false,
+        })
+        .map(|(i, _)| i)
+        .next();
+
+    let target = match target {
+        Some(t) => t,
+        None => return None,
+    };
+
+    let source_it = stacks.enumerate()
+        .filter(|&(_, ref stack)| match stack.top() {                 // only dragons of right color
+            Some(Suite::Dragon(col)) => color == col,
+            _ => false,
+        })
+        .map(|(i, _)| i);
+
+    let mut sources = [0; 4];
+
+    let mut n = 0;
+    for (i, s) in source_it.enumerate() {
+        sources[i] = s;
+        n = i + 1;
+    }
+
+    if n == 4 {
+        Some((target, sources))
+    } else {
+        None
+    }
+}
+
+pub fn get_automove<'a, I: Iterator<Item=&'a Stack> + Clone>(stacks: I) -> Option<(usize, usize)> {
+    use self::Suite::*;
+
+    let lowest_nr = stacks.clone().filter_map(|s| match (s.role, s.top()) {
+        (StackRole::Target, None) => Some(0),
+        (StackRole::Target, Some(Number(n, _))) => Some(n),
+        _ => None
+    }).min().unwrap();
+
+    for (i, t_stack) in stacks.clone().enumerate() {
+        match t_stack.role {
+            StackRole::Target | StackRole::Flower => {}
+            _ => continue
+        }
+
+        for (j, s_stack) in stacks.clone().enumerate() {
+            match s_stack.role {
+                StackRole::Dragon | StackRole::Sorting => {}
+                _ => continue
+            }
+
+            match (s_stack.top(), t_stack.top()) {
+                //(Flower, None, StackRole::Flower) =>
+                (Some(Number(n, c)), _) => if n <= lowest_nr + 1 && is_valid_move(t_stack, Number(n, c), 1) {
+                    return Some((i, j))
+                }
+                (Some(card), _) => if is_valid_move(t_stack, card, 1) {
+                    return Some((i, j))
+                }
+                _ => continue
+            }
+        }
+    }
+    None
+}
+
 
 #[cfg(test)]
 mod tests {

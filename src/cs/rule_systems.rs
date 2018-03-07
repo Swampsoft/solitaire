@@ -16,41 +16,22 @@ impl GameState {
                 continue
             }
 
-            let target = self.stacks.iter().zip(self.entities.iter())   // iterate over stacks component of all entities
-                .filter_map(|x| x.all())                    // filter those that have a stack
-                .filter(|&(stack, _)| stack.role == StackRole::Dragon)
-                .filter(|&(stack, _)| match stack.top() {
-                    Some(Suite::Dragon(col)) => b.color == col,         // only dragons of right color
-                    None => true,                                       // or empty stack
-                    _ => false,
-                })
-                .map(|(_, e)| *e)
-                .next();
+            let (stacks, ents): (Vec<_>, Vec<Entity>) = self.stacks.iter().zip(self.entities.iter())
+                .filter_map(|(stack, e)| stack.as_ref().map(|s| (s, e)))
+                .unzip();
 
-            b.target_stack = target;
-            if target.is_none() {
-                b.state = ButtonState::Up;
-                b.source_stacks = Vec::new();
-                continue
-            }
+            let r = rules::check_button(b.color, stacks.into_iter());
 
-            let sources = self.stacks.iter().zip(self.entities.iter())        // iterate over stacks component of all entities
-                .filter_map(|x| x.all())                          // filter those that have a stack
-                .filter_map(|(stack, e)| stack.top().map(|c| (c, e)))            // only top cards
-                .filter(|&(card, _)| match card {                 // only dragons of right color
-                    Suite::Dragon(col) => b.color == col,
-                    _ => false,
-                })
-                .map(|(_, e)| *e)
-                .collect::<Vec<_>>();
-
-            let n = sources.len();
-
-            if n == 4 {
-                b.state = ButtonState::Active;
-                b.source_stacks = sources;
-            } else {
-                b.state = ButtonState::Up;
+            match r {
+                None => {
+                    b.state = ButtonState::Up;
+                    b.stacks = None;
+                    continue
+                }
+                Some((t, s)) => {
+                    b.state = ButtonState::Active;
+                    b.stacks = Some((ents[t],[ents[s[0]], ents[s[1]], ents[s[2]], ents[s[3]]]))
+                }
             }
         }
     }
@@ -61,65 +42,21 @@ impl GameState {
         }
         self.dirty = false;
 
-        let mut auto_move = None;
-
+        let auto_move;
         {
-            let flowers = self.stacks.iter().enumerate()
-                .filter_map(|(i, s)| match *s {
-                    Some(ref stack) => if stack.role == StackRole::Flower && stack.top().is_none() { Some(i) } else { None }
-                    None => None
-                })
-                .collect::<Vec<_>>();
+            let stacks: Vec<_> = self.stacks.iter()
+                .filter_map(|s| s.as_ref())
+                .collect();
 
-            let targets = self.stacks.iter().enumerate()
-                .filter_map(|(i, s)| match *s {
-                    Some(ref stack) => if stack.role == StackRole::Target { Some((i, stack.top())) } else { None }
-                    None => None
-                })
-                .collect::<Vec<_>>();
+            let (stacks, idx): (Vec<_>, Vec<_>) = self.stacks.iter().enumerate()
+                .filter_map(|(i, stack)| stack.as_ref().map(|s| (s, i)))
+                .unzip();
 
-            let top_cards = self.stacks.iter().zip(self.entities.iter())      // iterate over stacks component of all entities
-                .filter_map(|x| x.all())                          // filter those that have a stack
-                .filter_map(|(stack, e)| match stack.role {       // only top cards of Dragon and Generic stacks
-                    StackRole::Dragon | StackRole::Sorting => stack.top().map(|c| (c, e)),
-                    _ => None
-                });
-
-            'outer:
-            for (c, s) in top_cards {
-                match c {
-                    Suite::Number(n, _) => {
-                        let lowest = targets.iter().map(|&(_, l)| match l {
-                            Some(Suite::Number(n, _)) => n,
-                            None => 0,
-                            _ => panic!("Invalid card on target stack")
-                        }).min().unwrap();
-
-                        if n > lowest + 1 {
-                            continue 'outer
-                        }
-
-                        for &(t, _) in targets.iter() {
-                            let d_stack = self.stacks[t].as_ref().unwrap();
-
-                            if rules::is_valid_move(d_stack, c, 1) {
-                                auto_move = Some((self.ent_lookup[s], t));
-                                break 'outer
-                            }
-                        }
-                    }
-                    Suite::Flower => {
-                        for f in flowers.iter() {
-                            auto_move = Some((self.ent_lookup[s], *f));
-                        }
-                        break 'outer
-                    }
-                    _ => continue 'outer
-                }
-            }
+            auto_move = rules::get_automove(stacks.into_iter())
+                .map(|(t, s)| (idx[t], idx[s]));
         }
 
-        if let Some((src, dst)) = auto_move {
+        if let Some((dst, src)) = auto_move {
             let card;
             let start_pos;
             let target_pos;
