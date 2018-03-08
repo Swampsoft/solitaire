@@ -71,7 +71,7 @@ impl Button {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum Suite {
     FaceDown,
     Flower,
@@ -79,7 +79,7 @@ pub enum Suite {
     Number(u8, Color),
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum StackRole {
     Dragon,
     Flower,
@@ -89,7 +89,7 @@ pub enum StackRole {
     Animation,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Hash, Eq, PartialEq, Debug)]
 pub struct Stack {
     pub cards: Vec<Suite>,
     pub role: StackRole,
@@ -123,6 +123,10 @@ impl Stack {
 
     pub fn extend(&mut self, other: Stack) {
         self.cards.extend(other.cards);
+    }
+
+    pub fn peek(&self, idx: usize) -> Suite {
+        self.cards[idx]
     }
 
     pub fn get_stackshift(&self) -> Vector2 {

@@ -1,6 +1,18 @@
 
 use types::*;
 
+pub fn check_victory<'a, I: Iterator<Item=&'a Stack> + Clone>(stacks: I) -> bool {
+    let a = stacks.clone()
+        .filter(|s| s.role == StackRole::Sorting)
+        .all(|s| s.top().is_none());
+
+    let b = stacks.clone()
+        .filter(|s| s.role == StackRole::Target)
+        .all(|s| s.len() == 9);
+
+    a && b
+}
+
 pub fn is_valid_pair(lower: Suite, upper: Suite) -> bool {
     use self::Suite::*;
     match (lower, upper) {
@@ -133,6 +145,44 @@ pub fn get_automove<'a, I: Iterator<Item=&'a Stack> + Clone>(stacks: I) -> Optio
         }
     }
     None
+}
+
+#[derive(Debug)]
+pub enum Move {
+    Button(Color, usize, [usize; 4]),
+    Cards(usize, usize, usize),
+}
+
+pub fn calc_possible_moves<'a, I: Iterator<Item=&'a Stack> + Clone>(stacks: I) -> Vec<Move> {
+    let mut moves = Vec::new();
+
+    if let Some((t, s)) = get_automove(stacks.clone()) {
+        moves.push(Move::Cards(t, s, 1));
+        return moves
+    }
+
+    for &color in &[Color::Red, Color::Green, Color::White] {
+        if let Some((t, s)) = check_button(color, stacks.clone()) {
+            moves.push(Move::Button(color, t, s));
+        }
+    }
+
+    for (s, s_stack) in stacks.clone().enumerate() {
+        for i in (0..s_stack.len()).rev() {
+            let n = s_stack.len() - i;
+            if !is_valid_drag(s_stack, i) {
+                break
+            }
+            let card = s_stack.peek(i);
+            for (t, t_stack) in stacks.clone().enumerate() {
+                if is_valid_move(t_stack, card, n) {
+                    moves.push(Move::Cards(t, s, n))
+                }
+            }
+        }
+    }
+
+    moves
 }
 
 

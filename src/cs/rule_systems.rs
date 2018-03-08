@@ -44,10 +44,6 @@ impl GameState {
 
         let auto_move;
         {
-            let stacks: Vec<_> = self.stacks.iter()
-                .filter_map(|s| s.as_ref())
-                .collect();
-
             let (stacks, idx): (Vec<_>, Vec<_>) = self.stacks.iter().enumerate()
                 .filter_map(|(i, stack)| stack.as_ref().map(|s| (s, i)))
                 .unzip();

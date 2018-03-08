@@ -10,6 +10,7 @@ mod render_systems;
 mod rule_systems;
 
 use resources::Resources;
+use rules;
 use types::*;
 
 use self::render_systems::*;

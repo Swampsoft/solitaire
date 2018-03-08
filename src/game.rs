@@ -1,3 +1,5 @@
+use std::iter;
+use std::slice;
 
 use rand::{thread_rng, Rng};
 
@@ -50,6 +52,12 @@ impl Game {
         game.animate_shuffle();
 
         game
+    }
+
+    pub fn export<'a>(&'a self) -> Vec<Stack> {
+        self.all_stacks.iter()
+            .map(|e| (*self.state.get_stack(*e).unwrap()).clone())
+            .collect()
     }
 
     pub fn check_win_condition(&self) -> bool {

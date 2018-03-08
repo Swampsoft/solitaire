@@ -9,6 +9,7 @@ extern crate sdl2;
 
 mod gamestates;
 
+mod ai;
 mod cs;
 mod game;
 mod resources;

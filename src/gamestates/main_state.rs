@@ -7,6 +7,8 @@ use ggez::timer;
 use game::Game;
 use resources::Resources;
 
+use ai::AiState;
+
 use super::GameWrapper;
 use super::welcome_state::WelcomeState;
 
@@ -64,6 +66,11 @@ impl EventHandler for MainState  {
     fn mouse_motion_event(&mut self, _ctx: &mut Context, _state: MouseState,
                           _x: i32, _y: i32, xrel: i32, yrel: i32) {
         self.game.state.handle_mouse_move(xrel, yrel);
+    }
+
+    fn key_down_event(&mut self, _ctx: &mut Context, _keycode: Keycode, _keymod: Mod, _repeat: bool ) {
+        let ai = AiState::new(self.game.export());
+        ai.dfs();
     }
 }
 
