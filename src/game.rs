@@ -1,5 +1,3 @@
-use std::iter;
-use std::slice;
 
 use rand::{thread_rng, Rng};
 
