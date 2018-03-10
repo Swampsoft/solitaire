@@ -35,11 +35,11 @@ pub struct Resources {
     pub card_font: Font,
     pub ui_font: Font,
     pub text: HashMap<String, Text>,
-    pub pickup_sound: Source,
-    pub place_sound: Source,
-    pub deal_sound: Source,
-    pub sweep_sound: Source,
-    pub music: Source,
+    pub pickup_sound: Audio,
+    pub place_sound: Audio,
+    pub deal_sound: Audio,
+    pub sweep_sound: Audio,
+    pub music: Audio,
 }
 
 impl Resources {
@@ -79,13 +79,13 @@ impl Resources {
         let mut white = Vec::with_capacity(9);
         let mut red = Vec::with_capacity(9);
         for i in 1..10 {
-            let mut img = Image::new(ctx, format!("/textures/solitaire/large_icons/bamboo_{}.png", i))?;
+            let mut img = Image::new(ctx, &format!("/textures/solitaire/large_icons/bamboo_{}.png", i))?;
             img.set_filter(graphics::FilterMode::Linear);
             green.push(img);
-            let mut img = Image::new(ctx, format!("/textures/solitaire/large_icons/coins_{}.png", i))?;
+            let mut img = Image::new(ctx, &format!("/textures/solitaire/large_icons/coins_{}.png", i))?;
             img.set_filter(graphics::FilterMode::Linear);
             red.push(img);
-            let mut img = Image::new(ctx, format!("/textures/solitaire/large_icons/char_{}.png", i))?;
+            let mut img = Image::new(ctx, &format!("/textures/solitaire/large_icons/char_{}.png", i))?;
             img.set_filter(graphics::FilterMode::Linear);
             white.push(img);
         }
@@ -131,11 +131,11 @@ impl Resources {
             card_font,
             ui_font,
             text: HashMap::new(),
-            pickup_sound: Source::new(ctx, "/sounds/card_pickup.wav")?,
-            place_sound: Source::new(ctx, "/sounds/card_place.wav")?,
-            deal_sound: Source::new(ctx, "/sounds/card_deal.wav")?,
-            sweep_sound: Source::new(ctx, "/sounds/card_sweep.wav")?,
-            music: Source::new(ctx, "/music/Solitaire.ogg")?,
+            pickup_sound: Audio::new(ctx, "/sounds/card_pickup.wav")?,
+            place_sound: Audio::new(ctx, "/sounds/card_place.wav")?,
+            deal_sound: Audio::new(ctx, "/sounds/card_deal.wav")?,
+            sweep_sound: Audio::new(ctx, "/sounds/card_sweep.wav")?,
+            music: Audio::new(ctx, "/music/Solitaire.ogg")?,
         };
         Ok(r)
     }
@@ -184,5 +184,42 @@ impl Resources {
     pub fn store_wins(&self, ctx: &mut Context, n: u32) {
         let mut f = ctx.filesystem.create("/wins.txt").unwrap();
         f.write_all(format!("{}", n).as_bytes()).unwrap();
+    }
+}
+
+
+pub enum Audio {
+    Source(Source),
+    None
+}
+
+impl Audio {
+    pub fn new(ctx: &mut Context, file: &str) -> GameResult<Audio> {
+        match Source::new(ctx, file) {
+            Ok(src) => Ok(Audio::Source(src)),
+            Err(GameError::ResourceNotFound(_, _)) => Ok(Audio::None),
+            Err(e) => Err(e),
+        }
+    }
+
+    pub fn playing(&self) -> bool {
+        match *self {
+            Audio::None => true,
+            Audio::Source(ref s) => s.playing(),
+        }
+    }
+
+    pub fn set_volume(&mut self, vol: f32) {
+        match *self {
+            Audio::None => {},
+            Audio::Source(ref mut s) => s.set_volume(vol),
+        }
+    }
+
+    pub fn play(&self) -> GameResult<()> {
+        match *self {
+            Audio::None => Ok(()),
+            Audio::Source(ref s) => s.play(),
+        }
     }
 }
