@@ -26,12 +26,11 @@ use gamestates::GameWrapper;
 const SHENZHEN_PATH: &str =".local/share/Steam/SteamApps/common/SHENZHEN IO/Content/";
 
 
-
 fn main() {
     let c = conf::Conf {
         window_mode: conf::WindowMode::default()
             .dimensions(1280, 806),
-        window_setup: conf::WindowSetup::default().title("SHENZHEN IO Solitaire Clone"),
+        window_setup: conf::WindowSetup::default().title("Solitaire Clone"),
         backend: conf::Backend::OpenGL{major: 3, minor: 2},
     };
 
@@ -40,7 +39,7 @@ fn main() {
     #[cfg(feature = "profiling")]
     PROFILER.lock().unwrap().start("solitaire.profile").unwrap();
 
-    let ctx = &mut ggez::Context::load_from_conf("solitaire_clone", "Martin Billinger", c).unwrap();
+    let ctx = &mut ggez::Context::load_from_conf("solitaire_clone", "Swampsoft Games", c).unwrap();
 
     ctx.filesystem.mount(&env::home_dir().unwrap().join(SHENZHEN_PATH), true);
 
