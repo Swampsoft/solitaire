@@ -1,148 +1,264 @@
 
-use button;
-use cards::{Card, Color, Suite};
-use table::Table;
+use types::*;
 
-#[derive(Debug)]
-pub enum StackRules {
-    Dragging,
-    Target,
-    Dragon,
-    Flower,
-    Solitaire
+pub fn check_victory<'a, I: Iterator<Item=&'a Stack> + Clone>(stacks: I) -> bool {
+    let a = stacks.clone()
+        .filter(|s| s.role == StackRole::Sorting)
+        .all(|s| s.top().is_none());
+
+    let b = stacks.clone()
+        .filter(|s| s.role == StackRole::Target)
+        .all(|s| s.len() == 9);
+
+    a && b
 }
 
-impl StackRules {
-    pub fn accept_drag(&self, cards: &[Card]) -> bool {
-        match *self {
-            StackRules::Dragging => panic!("Dragged stack can't accept another drag."),
-            StackRules::Target |
-            StackRules::Flower => return false,
-            StackRules::Dragon => {
-                cards.iter().all(|c|c.is_faceup())
-            },
-            StackRules::Solitaire => {
-                is_valid_stack(cards)
-            },
-        }
-    }
-
-    pub fn accept_drop(&self, top_card: Option<&Suite>, dropped: &Suite, n_cards: usize) -> bool {
-        use self::Suite::*;
-        match *self {
-            StackRules::Dragging => panic!("Dragged stack can't accept a drop."),
-            StackRules::Target if n_cards == 1 => {
-                match (top_card, dropped) {
-                    (None, &Number(1, _)) => true,
-                    (Some(&Number(i1, c1)), &Number(i2, c2)) => c1 == c2 && i2 == i1 + 1,
-                    _ => false
-                }
-            }
-            StackRules::Dragon if n_cards == 1 => {
-                match (top_card, dropped) {
-                    (None, _) => true,
-                    _ => false
-                }
-            },
-            StackRules::Flower if n_cards == 1 => {
-                match (top_card, dropped) {
-                    (None, &Flower) => true,
-                    _ => false
-                }
-            }
-            StackRules::Solitaire => {
-                match (top_card, dropped) {
-                    (None, _) => true,
-                    (Some(&Number(i1, c1)), &Number(i2, c2)) => c1 != c2 && i2 + 1 == i1,
-                    _ => false
-                }
-            },
-            _ => false
-        }
-    }
-}
-
-pub fn check_wincondition(table: &Table) -> bool {
-    table.iter_solitaire_stacks()
-    .map(|s|s.top_card())
-    .all(|tc|tc.is_none())
-}
-
-pub fn is_valid_stack(cards: &[Card]) -> bool {
+pub fn is_valid_pair(lower: Suite, upper: Suite) -> bool {
     use self::Suite::*;
-    for (a, b) in cards.iter().zip(cards[1..].iter()) {
-        match (a.suite(), b.suite()) {
-            (&Number(ia, ca), &Number(ib, cb)) if ca != cb && ia == ib +1 => continue,
-            _ => return false
-        }
+    match (lower, upper) {
+        (Number(ln, lc), Number(un, uc)) => lc != uc && ln == un + 1,
+        _ => false
     }
-    return true
 }
 
-pub fn global_rules(table: &mut Table) -> bool {
+pub fn is_valid_sequence<'a, T: Iterator<Item=&'a Suite>>(cards: T) -> bool {
+    let mut iter = cards.into_iter();
+    let mut lower = match iter.next() {
+        None => return true,  // an empty sequence is a valid sequence
+        Some(&l) => l,
+    };
+    for &upper in iter {
+        if !is_valid_pair(lower, upper) {
+            return false
+        }
+        lower = upper;
+    }
+    true
+}
+
+pub fn is_valid_drag(stack: &Stack, idx: usize) -> bool {
+    match (stack.role, stack.top()) {
+        (_, None) => false,
+        (StackRole::Flower, _) => false,
+        (StackRole::Target, _) => false,
+        (StackRole::Dragon, Some(card)) => card != Suite::FaceDown,
+        (StackRole::Sorting, _) => is_valid_sequence(stack.cards[idx..].iter()),
+        (StackRole::Generic, _) |
+        (StackRole::Animation, _) => panic!("Attempt to drag from invalid stack")
+    }
+}
+
+pub fn is_valid_drop(target: &Stack, source: &Stack) -> bool {
+    let base_card = source.cards[0];
+    let n_cards = source.len();
+
+    is_valid_move(target, base_card, n_cards)
+}
+
+pub fn is_valid_move(target: &Stack, base_card: Suite, n_cards: usize) -> bool {
     use self::Suite::*;
 
-    let mut n_green_dragons = 0;
-    let mut n_red_dragons = 0;
-    let mut n_white_dragons = 0;
-    let mut auto_move = None;
+    let top_card = target.top();
 
-    let mut dirty = false;
+    match (target.role, top_card, base_card, n_cards) {
+        (StackRole::Dragon, None, _, 1) => true,
+        (StackRole::Flower, None, Flower, 1) => true,
+        (StackRole::Target, None, Number(1, _), 1) => true,
+        (StackRole::Target, Some(Number(ln, lc)), Number(un, uc), 1) => lc == uc && ln + 1 == un,
+        (StackRole::Sorting, None, _, _) => true,
+        (StackRole::Sorting, Some(l), u, _) => is_valid_pair(l, u),
+        (StackRole::Generic, _, _, _) |
+        (StackRole::Animation, _, _, _) => panic!("Attempt to drop on invalid stack"),
+        _ => false,
+    }
+}
 
-    'find_moves:
-    for i in table.dragon_stacks().chain(table.solitaire_stacks()) {
-        let top_suite = table.get_stack(i).top_suite();
-        match top_suite {
-            Some(&Flower) => {
-                auto_move = Some((i, table.flower_stack()));
-                break 'find_moves;
-            },
-            Some(&Dragon(Color::Green)) => n_green_dragons += 1,
-            Some(&Dragon(Color::Red)) => n_red_dragons += 1,
-            Some(&Dragon(Color::White)) => n_white_dragons += 1,
-            _ => {}
+pub fn check_button<'a, I: Iterator<Item=&'a Stack> + Clone>(color: Color, stacks: I)  -> Option<(usize, [usize; 4])> {
+    let target = stacks.clone().enumerate()
+        .filter(|&(_, ref stack)| stack.role == StackRole::Dragon)
+        .filter(|&(_, ref stack)| match stack.top() {
+            Some(Suite::Dragon(col)) => col == color,       // only dragons of right color
+            None => true,                                   // or empty stack
+            _ => false,
+        })
+        .map(|(i, _)| i)
+        .next();
+
+    let target = match target {
+        Some(t) => t,
+        None => return None,
+    };
+
+    let source_it = stacks.enumerate()
+        .filter(|&(_, ref stack)| match stack.top() {                 // only dragons of right color
+            Some(Suite::Dragon(col)) => color == col,
+            _ => false,
+        })
+        .map(|(i, _)| i);
+
+    let mut sources = [0; 4];
+
+    let mut n = 0;
+    for (i, s) in source_it.enumerate() {
+        sources[i] = s;
+        n = i + 1;
+    }
+
+    if n == 4 {
+        Some((target, sources))
+    } else {
+        None
+    }
+}
+
+pub fn get_automove<'a, I: Iterator<Item=&'a Stack> + Clone>(stacks: I) -> Option<(usize, usize)> {
+    use self::Suite::*;
+
+    let lowest_nr = stacks.clone().filter_map(|s| match (s.role, s.top()) {
+        (StackRole::Target, None) => Some(0),
+        (StackRole::Target, Some(Number(n, _))) => Some(n),
+        _ => None
+    }).min().unwrap();
+
+    for (i, t_stack) in stacks.clone().enumerate() {
+        match t_stack.role {
+            StackRole::Target | StackRole::Flower => {}
+            _ => continue
         }
 
-        let i_min = table.iter_target_stacks().map(|stack| {
-            match stack.top_suite() {
-                Some(&Number(i, _)) => i,
-                None => 0,
-                _ => panic!("Invalid card on target stack")
-            }
-        }).min().unwrap_or(0);
-
-        for t in table.target_stacks() {
-            let target_suite = table.get_stack(t).top_suite();
-            match (top_suite, target_suite) {
-                (Some(&Number(1, _)), None) => {},
-                (Some(&Number(i2, c2)), Some(&Number(i1, c1))) if c1 == c2 && i2 == i1 + 1 && i2 == i_min + 1=> {},
+        for (j, s_stack) in stacks.clone().enumerate() {
+            match s_stack.role {
+                StackRole::Dragon | StackRole::Sorting => {}
                 _ => continue
             }
-            auto_move = Some((i, t));
-            break 'find_moves;
+
+            match (s_stack.top(), t_stack.top()) {
+                //(Flower, None, StackRole::Flower) =>
+                (Some(Number(n, c)), _) => if n <= lowest_nr + 1 && is_valid_move(t_stack, Number(n, c), 1) {
+                    return Some((i, j))
+                }
+                (Some(card), _) => if is_valid_move(t_stack, card, 1) {
+                    return Some((i, j))
+                }
+                _ => continue
+            }
+        }
+    }
+    None
+}
+
+#[derive(Debug)]
+pub enum Move {
+    Button(Color, usize, [usize; 4]),
+    Cards(usize, usize, usize),
+}
+
+pub fn calc_possible_moves<'a, I: Iterator<Item=&'a Stack> + Clone>(stacks: I) -> Vec<Move> {
+    let mut moves = Vec::new();
+
+    if let Some((t, s)) = get_automove(stacks.clone()) {
+        moves.push(Move::Cards(t, s, 1));
+        return moves
+    }
+
+    for &color in &[Color::Red, Color::Green, Color::White] {
+        if let Some((t, s)) = check_button(color, stacks.clone()) {
+            moves.push(Move::Button(color, t, s));
         }
     }
 
-    for b in 0..table.n_buttons() {
-        if let button::ButtonState::Down = table.get_button(b).state() {
-            continue
-        }
-        let color = table.get_button(b).color();
-        if table.find_dragon_target(color).is_none() {
-            continue
-        }
-        match color {
-            Color::Green if n_green_dragons == 4 => table.set_button(b, button::ButtonState::Active),
-            Color::Red if n_red_dragons == 4 => table.set_button(b, button::ButtonState::Active),
-            Color::White if n_white_dragons == 4 => table.set_button(b, button::ButtonState::Active),
-            _ => table.set_button(b, button::ButtonState::Up)
+    for (s, s_stack) in stacks.clone().enumerate() {
+        for i in (0..s_stack.len()).rev() {
+            let n = s_stack.len() - i;
+            if !is_valid_drag(s_stack, i) {
+                break
+            }
+            let card = s_stack.peek(i);
+            for (t, t_stack) in stacks.clone().enumerate() {
+                if is_valid_move(t_stack, card, n) {
+                    moves.push(Move::Cards(t, s, n))
+                }
+            }
         }
     }
 
-    if let Some((s, t)) = auto_move {
-        table.animate_move(s, t);
-        dirty = false;
+    moves
+}
+
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn valid_pairs() {
+        use self::Suite::*;
+        use self::Color::*;
+
+        for i in 1..9 {
+            assert!(is_valid_pair(Number(i + 1, Green), Number(i, Red)));
+            assert!(is_valid_pair(Number(i + 1, Green), Number(i, White)));
+            assert!(is_valid_pair(Number(i + 1, White), Number(i, Red)));
+            assert!(is_valid_pair(Number(i + 1, Red), Number(i, Green)));
+            assert!(is_valid_pair(Number(i + 1, White), Number(i, Green)));
+            assert!(is_valid_pair(Number(i + 1, Red), Number(i, White)));
+            assert!(!is_valid_pair(Number(i + 1, Red), Number(i, Red)));
+            assert!(!is_valid_pair(Number(i + 1, Green), Number(i, Green)));
+            assert!(!is_valid_pair(Number(i + 1, White), Number(i, White)));
+        }
+
+        for &c1 in &[Red, Green, White] {
+            for &c2 in &[Red, Green, White] {
+                for i in 1..10 {
+                    for j in 1..10 {
+                        if i == j + 1 {
+                            continue
+                        }
+                        assert!(!is_valid_pair(Number(i, c1), Number(j, c2)));
+                    }
+                    assert!(!is_valid_pair(Number(i, c1), Dragon(c2)));
+                    assert!(!is_valid_pair(Number(i, c1), Flower));
+                    assert!(!is_valid_pair(Dragon(c1), Number(i, c2)));
+                    assert!(!is_valid_pair(Flower, Number(i, c2)));
+                }
+                assert!(!is_valid_pair(Dragon(c1), Dragon(c2)));
+            }
+            assert!(!is_valid_pair(Dragon(c1), Flower));
+            assert!(!is_valid_pair(Flower, Dragon(c1)));
+        }
+        assert!(!is_valid_pair(Flower, Flower));
     }
 
-    dirty
+    #[test]
+    fn valid_sequences() {
+        use self::Suite::*;
+        use self::Color::*;
+        use std::iter;
+
+        let valid_vec = vec![Number(5, White), Number(4, Red), Number(3, White)];
+        let valid_slice = &[Number(9, Red), Number(8, Green), Number(7, White)];
+
+        let valid_iter = iter::once(&Number(3, Green))
+            .chain(iter::once(&Number(2, Red)))
+            .chain(iter::once(&Number(1, White)));
+
+        assert!(is_valid_sequence(valid_vec.iter()));
+        assert!(is_valid_sequence(valid_vec.iter()));
+        assert!(is_valid_sequence(Vec::new().iter()));  // empty sequence
+
+        assert!(is_valid_sequence(valid_slice.iter()));
+        assert!(is_valid_sequence(valid_slice.iter()));
+        assert!(is_valid_sequence([].iter()));  // empty sequence
+        assert!(is_valid_sequence([Number(42, Red)].iter()));  // single item
+
+        assert!(is_valid_sequence(valid_iter));
+        assert!(is_valid_sequence(iter::empty()));  // empty sequence
+        assert!(is_valid_sequence(iter::once(&Number(6, White))));  // single item
+
+        assert!(!is_valid_sequence([Number(3, Red), Number(2, Red), Number(1, Red)].iter()));
+        assert!(!is_valid_sequence([Number(3, Red), Number(2, Green), Dragon(White)].iter()));
+        assert!(!is_valid_sequence([Number(3, Red), Number(2, Green), Flower].iter()));
+    }
+
 }

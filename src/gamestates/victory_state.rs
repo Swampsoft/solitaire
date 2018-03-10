@@ -4,16 +4,16 @@ use ggez::graphics;
 use ggez::graphics::Point2;
 use ggez::timer;
 
+use game::Game;
 use resources::Resources;
-use table::Table;
 
 use super::GameWrapper;
 use super::main_state::MainState;
 
 pub struct VictoryState {
     pub resources: Resources,
-    pub table: Table,
     pub move_on: bool,
+    pub game: Game,
 }
 
 impl VictoryState {
@@ -21,22 +21,22 @@ impl VictoryState {
         if self.move_on {
             GameWrapper::Welcome(self.into())
         } else {
-            GameWrapper::Quit
+            GameWrapper::GiveUp(self.into())
         }
     }
 }
 
 impl EventHandler for VictoryState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let t = timer::get_time_since_start(ctx);
-        self.table.update(t, &mut self.resources);
+        let dt = timer::duration_to_f64(timer::get_delta(ctx)) as f32;
+        self.game.state.run_update(dt, &mut self.resources);
+
         Ok(())
     }
 
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        self.table.draw(ctx, &mut self.resources)?;
+        self.game.state.run_render(ctx, &mut self.resources)?;
 
         graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         let text = self.resources.get_text(ctx, "Congratulations.")?;
@@ -48,18 +48,17 @@ impl EventHandler for VictoryState {
     }
 
     fn mouse_button_down_event(&mut self, ctx: &mut Context, _button: MouseButton, _x: i32, _y: i32) {
-        self.move_on = true;
         ctx.quit().unwrap();
     }
 }
 
 impl From<MainState> for VictoryState {
     fn from(mut old: MainState) -> VictoryState {
-        old.table.animate_win();
+        old.game.animate_victory();
         VictoryState {
             resources: old.resources,
-            table: old.table,
             move_on: false,
+            game: old.game,
         }
     }
 }

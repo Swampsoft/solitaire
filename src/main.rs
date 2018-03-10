@@ -1,21 +1,21 @@
 
-#[cfg(feature = "profiling")]
-extern crate cpuprofiler;
+#[cfg(feature = "profiling")] extern crate cpuprofiler;
 
+extern crate env_logger;
 extern crate ggez;
+#[macro_use] extern crate log;
 extern crate rand;
 extern crate sdl2;
 
 mod gamestates;
 
-mod animation;
-mod bbox;
-mod button;
-mod cards;
-mod cardstack;
+mod ai;
+mod cs;
+mod game;
 mod resources;
 mod rules;
-mod table;
+mod types;
+mod utils;
 
 use std::env;
 
@@ -27,6 +27,8 @@ const SHENZHEN_PATH: &str =".local/share/Steam/SteamApps/common/SHENZHEN IO/Cont
 
 
 fn main() {
+    env_logger::init();
+
     let c = conf::Conf {
         window_mode: conf::WindowMode::default()
             .dimensions(1280, 806),

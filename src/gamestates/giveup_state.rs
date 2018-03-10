@@ -3,15 +3,16 @@ use ggez::event::*;
 use ggez::graphics;
 use ggez::timer;
 
+use game::Game;
 use resources::Resources;
-use table::Table;
 
 use super::GameWrapper;
 use super::main_state::MainState;
+use super::victory_state::VictoryState;
 
 pub struct GiveupState {
     pub resources: Resources,
-    pub table: Table,
+    pub game: Game,
 }
 
 impl GiveupState {
@@ -22,10 +23,10 @@ impl GiveupState {
 
 impl EventHandler for GiveupState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let t = timer::get_time_since_start(ctx);
-        self.table.update(t, &mut self.resources);
+        let dt = timer::duration_to_f64(timer::get_delta(ctx)) as f32;
+        self.game.state.run_update(dt, &mut self.resources);
 
-        if self.table.game_enabled() {
+        if !self.game.state.busy() {
             ctx.quit().unwrap();
         }
 
@@ -34,8 +35,7 @@ impl EventHandler for GiveupState {
 
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        self.table.draw(ctx, &mut self.resources)?;
+        self.game.state.run_render(ctx, &mut self.resources)?;
 
         graphics::present(ctx);
         Ok(())
@@ -44,10 +44,20 @@ impl EventHandler for GiveupState {
 
 impl From<MainState> for GiveupState {
     fn from(mut old: MainState) -> GiveupState {
-        old.table.animate_giveup();
+        old.game.animate_giveup();
         GiveupState {
             resources: old.resources,
-            table: old.table,
+            game: old.game,
+        }
+    }
+}
+
+impl From<VictoryState> for GiveupState {
+    fn from(mut old: VictoryState) -> GiveupState {
+        old.game.animate_giveup();
+        GiveupState {
+            resources: old.resources,
+            game: old.game,
         }
     }
 }
