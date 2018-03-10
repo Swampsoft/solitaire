@@ -1,7 +1,7 @@
 [package]
 name = "solitaire"
 version = "0.2.0"
-authors = ["Martin Billinger <flkazemakase@gmail.com>"]
+authors = ["Swampsoft <https://github.com/Swampsoft>"]
 
 [features]
 default = []
