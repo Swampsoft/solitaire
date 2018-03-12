@@ -14,7 +14,8 @@ features = ["cargo-resource-root"]
 
 [dependencies]
 cpuprofiler = { version = "0.0.3", optional = true }
-env_logger = "*"
-log = "*"
-rand = "*"
-sdl2 = "*"
+env_logger = "0.5"
+log = "0.4"
+rand = "0.4"
+sdl2 = "0.30"
+
