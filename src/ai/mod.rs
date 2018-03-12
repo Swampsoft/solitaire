@@ -43,9 +43,9 @@ impl AiState {
 
             visited.insert(state.clone());
 
-            let mut moves = rules::calc_possible_moves(state.stacks.iter());
+            let moves = rules::calc_possible_moves(state.stacks.iter());
             for m in moves {
-                let mut newstate = state.apply_move(m);
+                let newstate = state.apply_move(m);
                 queue.push((depth + 1, newstate));
             }
         }
