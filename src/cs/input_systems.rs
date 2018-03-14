@@ -51,7 +51,7 @@ impl GameState {
         }
     }
 
-    pub fn begin_drag_system(&mut self, mouse_pos: Point2, res: &Resources) {
+    pub fn begin_drag_system(&mut self, mouse_pos: Point2, res: &mut Resources) {
         if self.busy() {
             return
         }
@@ -108,7 +108,7 @@ impl GameState {
         }
     }
 
-    pub fn done_drag_system(&mut self, res: &Resources) {
+    pub fn done_drag_system(&mut self, res: &mut Resources) {
         if self.busy() {
             return
         }
