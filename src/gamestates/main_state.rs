@@ -56,11 +56,11 @@ impl EventHandler for MainState  {
     }
 
     fn mouse_button_down_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: i32, y: i32) {
-        self.game.state.handle_mouse_button_down(x, y, &self.resources);
+        self.game.state.handle_mouse_button_down(x, y, &mut self.resources);
     }
 
     fn mouse_button_up_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: i32, y: i32) {
-        self.game.state.handle_mouse_button_up(x, y, &self.resources);
+        self.game.state.handle_mouse_button_up(x, y, &mut self.resources);
     }
 
     fn mouse_motion_event(&mut self, _ctx: &mut Context, _state: MouseState,

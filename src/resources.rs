@@ -4,10 +4,10 @@ use std::collections::hash_map::Entry;
 use std::io::{Read, Write};
 
 use ggez::graphics::{Font, Image, Text};
-use ggez::audio::Source;
 use ggez::*;
 
 use types::{ButtonState, Color};
+use custom_audio::Source;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Sounds {
@@ -15,7 +15,7 @@ pub enum Sounds {
     //Pickup,
     Place,
     Sweep,
-    //Deal,
+    Deal,
 }
 
 pub struct Resources {
@@ -147,12 +147,12 @@ impl Resources {
         Ok(text)
     }
 
-    pub fn play_sound(&self, sound: Sounds) {
+    pub fn play_sound(&mut self, sound: Sounds) {
         match sound {
             Sounds::None => return,
             //Sounds::Pickup => self.pickup_sound.play(),
             Sounds::Place => self.place_sound.play(),
-            //Sounds::Deal => self.deal_sound.play(),
+            Sounds::Deal => self.deal_sound.play(),
             Sounds::Sweep => self.sweep_sound.play(),
         }.unwrap();
     }
@@ -215,10 +215,10 @@ impl Audio {
         }
     }
 
-    pub fn play(&self) -> GameResult<()> {
+    pub fn play(&mut self) -> GameResult<()> {
         match *self {
             Audio::None => Ok(()),
-            Audio::Source(ref s) => s.play(),
+            Audio::Source(ref mut s) => s.play(),
         }
     }
 }

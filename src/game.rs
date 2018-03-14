@@ -126,7 +126,7 @@ impl Game {
 
             let start_pos = fpos + fshift * height;
 
-            let ani = Animation {target_pos, target_stack: Some(target_stack), start_delay, time_left: 0.2, sound_start: Sounds::Place, sound_stop: Sounds::None};
+            let ani = Animation {target_pos, target_stack: Some(target_stack), start_delay, time_left: 0.2, sound_start: Sounds::Deal, sound_stop: Sounds::None};
             self.state.animate(card, start_pos, 100.0 + z, ani);
 
             s += 1;

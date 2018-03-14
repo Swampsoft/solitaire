@@ -5,11 +5,13 @@ extern crate env_logger;
 extern crate ggez;
 #[macro_use] extern crate log;
 extern crate rand;
+extern crate rodio;
 extern crate sdl2;
 
 mod gamestates;
 
 mod ai;
+mod custom_audio;
 mod cs;
 mod game;
 mod resources;

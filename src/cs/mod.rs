@@ -119,13 +119,13 @@ impl GameState {
         Ok(())
     }
 
-    pub fn handle_mouse_button_down(&mut self, x: i32, y: i32, res: &Resources) {
+    pub fn handle_mouse_button_down(&mut self, x: i32, y: i32, res: &mut Resources) {
         let pos = Point2::new(x as f32, y as f32);
         self.begin_drag_system(pos, res);
         self.button_click_system(pos);
     }
 
-    pub fn handle_mouse_button_up(&mut self, _x: i32, _y: i32, res: &Resources) {
+    pub fn handle_mouse_button_up(&mut self, _x: i32, _y: i32, res: &mut Resources) {
         self.done_drag_system(res);
     }
 
