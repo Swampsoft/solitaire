@@ -30,8 +30,8 @@ impl Source {
     pub fn from_data(_context: &mut Context, data: SoundData) -> GameResult<Self> {
         // MB: ugly but necessary because the endpoint is private within the audio context
         #[allow(deprecated)]
-        let endpoint = rodio::get_default_endpoint().unwrap();
-        let sink = rodio::Sink::new(&endpoint);
+        let device = rodio::default_output_device().unwrap();
+        let sink = rodio::Sink::new(&device);
         let cursor = io::Cursor::new(data);
         Ok(Source {
             data: cursor,
@@ -48,8 +48,8 @@ impl Source {
         let cursor = self.data.clone();
         let decoder = rodio::Decoder::new(cursor)?;
         #[allow(deprecated)]
-        let endpoint = rodio::get_default_endpoint().unwrap();
-        let sink = rodio::Sink::new(&endpoint);
+        let device = rodio::default_output_device().unwrap();
+        let sink = rodio::Sink::new(&device);
         mem::replace(&mut self.sink, sink).detach();
         self.sink.append(decoder);
         Ok(())
