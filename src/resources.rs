@@ -44,8 +44,8 @@ pub struct Resources {
 impl Resources {
     pub fn new(ctx: &mut Context) -> GameResult<Resources> {
         //let card_font = Font::default_font()?;
-        let card_font = Font::new(ctx, "/glacial/GlacialIndifference-Bold.ttf", 25)?;
-        let ui_font = Font::new(ctx, "/glacial/GlacialIndifference-Bold.ttf", 42)?;
+        let card_font = Font::new_px(ctx, "/glacial/GlacialIndifference-Bold.ttf", 32)?;
+        let ui_font = Font::new_px(ctx, "/glacial/GlacialIndifference-Bold.ttf", 56)?;
 
         let mut numbers = Vec::new();
         for i in 1..10 {
