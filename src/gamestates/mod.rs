@@ -30,8 +30,8 @@ impl GameWrapper {
     }
 
     pub fn run(self, ctx: &mut Context, events_loop: &mut EventsLoop) -> GameResult<Self> {
-        // make sure no unhandled events are left when entering a new state
-        //events_loop.flush_events(EventType::First as u32, EventType::Last as u32);
+        // make sure the quit event is not propagated to the next state
+        ctx.continuing = true;
         info!("Entering game state {}", self);
         match self {
             Welcome(mut state) => {
