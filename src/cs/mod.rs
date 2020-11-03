@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::slice;
 
 use ggez::{Context, GameResult};
-use ggez::graphics::Point2;
 
 mod animation_systems;
 mod input_systems;
@@ -33,7 +32,7 @@ pub struct GameState {
     dirty: bool,
     render_queue: RenderQueue,
 
-    drag_lock: Option<(Entity, Entity)>
+    drag_lock: Option<(Entity, Entity)>,
 }
 
 impl GameState {
@@ -113,24 +112,26 @@ impl GameState {
 
     pub fn run_render(&mut self, ctx: &mut Context, res: &mut Resources) -> GameResult<()> {
         self.render_queue.background_render_system(ctx, res)?;
-        self.render_queue.button_render_system(ctx, res, &self.positions, &self.buttons)?;
-        self.render_queue.stack_render_system(&self.positions, &self.stacks, &self.zorder)?;
+        self.render_queue
+            .button_render_system(ctx, res, &self.positions, &self.buttons)?;
+        self.render_queue
+            .stack_render_system(&self.positions, &self.stacks, &self.zorder)?;
         self.render_queue.render(ctx, res)?;
         Ok(())
     }
 
-    pub fn handle_mouse_button_down(&mut self, x: i32, y: i32, res: &mut Resources) {
-        let pos = Point2::new(x as f32, y as f32);
+    pub fn handle_mouse_button_down(&mut self, x: f32, y: f32, res: &mut Resources) {
+        let pos = Point2::from([x, y]);
         self.begin_drag_system(pos, res);
         self.button_click_system(pos);
     }
 
-    pub fn handle_mouse_button_up(&mut self, _x: i32, _y: i32, res: &mut Resources) {
+    pub fn handle_mouse_button_up(&mut self, _x: f32, _y: f32, res: &mut Resources) {
         self.done_drag_system(res);
     }
 
-    pub fn handle_mouse_move(&mut self, xrel: i32, yrel: i32) {
-        let dpos = Vector2::new(xrel as f32, yrel as f32);
+    pub fn handle_mouse_move(&mut self, xrel: f32, yrel: f32) {
+        let dpos = Vector2::from([xrel, yrel]);
         self.do_drag_system(dpos);
     }
 

@@ -1,5 +1,4 @@
-
-use rand::{thread_rng, Rng};
+use rand::{seq::SliceRandom, thread_rng};
 
 use cs::GameState;
 use types::*;
@@ -18,31 +17,103 @@ impl Game {
     pub fn new() -> Game {
         let mut state = GameState::default();
 
-        state.new_entity().with_position(Point2::new(533.0, 54.0)).with_button(Button::new(Color::Red)).build();
-        state.new_entity().with_position(Point2::new(533.0, 137.0)).with_button(Button::new(Color::Green)).build();
-        state.new_entity().with_position(Point2::new(533.0, 220.0)).with_button(Button::new(Color::White)).build();
+        state
+            .new_entity()
+            .with_position(Point2::new(533.0, 54.0))
+            .with_button(Button::new(Color::Red))
+            .build();
+        state
+            .new_entity()
+            .with_position(Point2::new(533.0, 137.0))
+            .with_button(Button::new(Color::Green))
+            .build();
+        state
+            .new_entity()
+            .with_position(Point2::new(533.0, 220.0))
+            .with_button(Button::new(Color::White))
+            .build();
 
-        let r = state.new_entity().with_position(Point2::new(45.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
-        let s = state.new_entity().with_position(Point2::new(197.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
-        let t = state.new_entity().with_position(Point2::new(349.0, 20.0)).with_stack(Stack::new(StackRole::Dragon)).build();
-        let flower_stack = state.new_entity().with_position(Point2::new(614.0, 20.0)).with_stack(Stack::new(StackRole::Flower)).build();
-        let x = state.new_entity().with_position(Point2::new(805.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
-        let y = state.new_entity().with_position(Point2::new(957.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
-        let z = state.new_entity().with_position(Point2::new(1109.0, 20.0)).with_stack(Stack::new(StackRole::Target)).build();
-        let a = state.new_entity().with_position(Point2::new(45.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
-        let b = state.new_entity().with_position(Point2::new(197.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
-        let c = state.new_entity().with_position(Point2::new(349.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
-        let d = state.new_entity().with_position(Point2::new(501.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
-        let e = state.new_entity().with_position(Point2::new(653.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
-        let f = state.new_entity().with_position(Point2::new(805.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
-        let g = state.new_entity().with_position(Point2::new(957.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
-        let h = state.new_entity().with_position(Point2::new(1109.0, 283.0)).with_stack(Stack::new(StackRole::Sorting)).build();
+        let r = state
+            .new_entity()
+            .with_position(Point2::new(45.0, 20.0))
+            .with_stack(Stack::new(StackRole::Dragon))
+            .build();
+        let s = state
+            .new_entity()
+            .with_position(Point2::new(197.0, 20.0))
+            .with_stack(Stack::new(StackRole::Dragon))
+            .build();
+        let t = state
+            .new_entity()
+            .with_position(Point2::new(349.0, 20.0))
+            .with_stack(Stack::new(StackRole::Dragon))
+            .build();
+        let flower_stack = state
+            .new_entity()
+            .with_position(Point2::new(614.0, 20.0))
+            .with_stack(Stack::new(StackRole::Flower))
+            .build();
+        let x = state
+            .new_entity()
+            .with_position(Point2::new(805.0, 20.0))
+            .with_stack(Stack::new(StackRole::Target))
+            .build();
+        let y = state
+            .new_entity()
+            .with_position(Point2::new(957.0, 20.0))
+            .with_stack(Stack::new(StackRole::Target))
+            .build();
+        let z = state
+            .new_entity()
+            .with_position(Point2::new(1109.0, 20.0))
+            .with_stack(Stack::new(StackRole::Target))
+            .build();
+        let a = state
+            .new_entity()
+            .with_position(Point2::new(45.0, 283.0))
+            .with_stack(Stack::new(StackRole::Sorting))
+            .build();
+        let b = state
+            .new_entity()
+            .with_position(Point2::new(197.0, 283.0))
+            .with_stack(Stack::new(StackRole::Sorting))
+            .build();
+        let c = state
+            .new_entity()
+            .with_position(Point2::new(349.0, 283.0))
+            .with_stack(Stack::new(StackRole::Sorting))
+            .build();
+        let d = state
+            .new_entity()
+            .with_position(Point2::new(501.0, 283.0))
+            .with_stack(Stack::new(StackRole::Sorting))
+            .build();
+        let e = state
+            .new_entity()
+            .with_position(Point2::new(653.0, 283.0))
+            .with_stack(Stack::new(StackRole::Sorting))
+            .build();
+        let f = state
+            .new_entity()
+            .with_position(Point2::new(805.0, 283.0))
+            .with_stack(Stack::new(StackRole::Sorting))
+            .build();
+        let g = state
+            .new_entity()
+            .with_position(Point2::new(957.0, 283.0))
+            .with_stack(Stack::new(StackRole::Sorting))
+            .build();
+        let h = state
+            .new_entity()
+            .with_position(Point2::new(1109.0, 283.0))
+            .with_stack(Stack::new(StackRole::Sorting))
+            .build();
 
         let mut game = Game {
             state,
             flower_stack,
-            all_stacks: vec!(a, b, c, d, e, f, g, h, r, s, t, flower_stack, x, y, z),
-            game_stacks: vec!(a, b, c, d, e, f, g, h),
+            all_stacks: vec![a, b, c, d, e, f, g, h, r, s, t, flower_stack, x, y, z],
+            game_stacks: vec![a, b, c, d, e, f, g, h],
             target_stacks: [x, y, z],
             //dragon_stacks: [r, s, t],
         };
@@ -53,14 +124,20 @@ impl Game {
     }
 
     pub fn export<'a>(&'a self) -> Vec<Stack> {
-        self.all_stacks.iter()
+        self.all_stacks
+            .iter()
             .map(|e| (*self.state.get_stack(*e).unwrap()).clone())
             .collect()
     }
 
     pub fn check_win_condition(&self) -> bool {
-        self.game_stacks.iter().all(|&s| self.state.get_stack(s).unwrap().len() == 0)
-        && self.target_stacks.iter().all(|&s| self.state.get_stack(s).unwrap().len() == 9)
+        self.game_stacks
+            .iter()
+            .all(|&s| self.state.get_stack(s).unwrap().len() == 0)
+            && self
+                .target_stacks
+                .iter()
+                .all(|&s| self.state.get_stack(s).unwrap().len() == 9)
     }
 
     pub fn shuffled_deck() -> Stack {
@@ -80,7 +157,7 @@ impl Game {
 
         cards.push(Suite::Flower);
 
-        thread_rng().shuffle(&mut cards);
+        cards.shuffle(&mut thread_rng());
 
         Stack {
             cards,
@@ -102,22 +179,38 @@ impl Game {
             } else {
                 Sounds::None
             };
-            let ani = Animation { target_pos, target_stack, start_delay: 0.0, time_left: 0.1 * i, sound_start: Sounds::None, sound_stop };
-            self.state.animate(Suite::FaceDown, start_pos, 100.0 + n as f32, ani);
+            let ani = Animation {
+                target_pos,
+                target_stack,
+                start_delay: 0.0,
+                time_left: 0.1 * i,
+                sound_start: Sounds::None,
+                sound_stop,
+            };
+            self.state
+                .animate(Suite::FaceDown, start_pos, 100.0 + n as f32, ani);
         }
     }
 
     pub fn animate_deal(&mut self) {
-        self.state.get_stack_mut(self.flower_stack).unwrap().cards.clear();
+        self.state
+            .get_stack_mut(self.flower_stack)
+            .unwrap()
+            .cards
+            .clear();
 
-        let mut new_deck = Game::shuffled_deck();  // TODO: should this be a parameter to the function?
+        let mut new_deck = Game::shuffled_deck(); // TODO: should this be a parameter to the function?
 
         let fpos = *self.state.get_position(self.flower_stack).unwrap();
-        let fshift = self.state.get_stack(self.flower_stack).unwrap().get_stackshift();
+        let fshift = self
+            .state
+            .get_stack(self.flower_stack)
+            .unwrap()
+            .get_stackshift();
 
         let mut height = 0.0;
         let mut s = 0;
-        let mut z= new_deck.len() as f32;
+        let mut z = new_deck.len() as f32;
         let mut start_delay = 0.0;
         while let Some(card) = new_deck.pop_card() {
             let target_stack = self.game_stacks[s];
@@ -126,7 +219,14 @@ impl Game {
 
             let start_pos = fpos + fshift * height;
 
-            let ani = Animation {target_pos, target_stack: Some(target_stack), start_delay, time_left: 0.2, sound_start: Sounds::Deal, sound_stop: Sounds::None};
+            let ani = Animation {
+                target_pos,
+                target_stack: Some(target_stack),
+                start_delay,
+                time_left: 0.2,
+                sound_start: Sounds::Deal,
+                sound_stop: Sounds::None,
+            };
             self.state.animate(card, start_pos, 100.0 + z, ani);
 
             s += 1;
@@ -163,14 +263,20 @@ impl Game {
         self.state.clear();
 
         for (z, (card, start_pos)) in cards.into_iter().enumerate() {
-
             let mut direction = start_pos - Point2::new(640.0, 400.0);
             let dist = direction.norm();
             direction = direction / dist;
 
             let target_pos = start_pos + direction * 800.0;
 
-            let ani = Animation {target_pos, target_stack: None, start_delay: 0.0, time_left: 0.2, sound_start: Sounds::None, sound_stop: Sounds::None};
+            let ani = Animation {
+                target_pos,
+                target_stack: None,
+                start_delay: 0.0,
+                time_left: 0.2,
+                sound_start: Sounds::None,
+                sound_stop: Sounds::None,
+            };
             self.state.animate(card, start_pos, 100.0 + z as f32, ani);
         }
     }
@@ -187,16 +293,25 @@ impl Game {
                     empty = false;
                     let cardpos = pos + stack.get_stackshift() * stack.len() as f32;
                     cards.push((card, cardpos));
-                    continue
+                    continue;
                 }
             }
-            if empty { break }
+            if empty {
+                break;
+            }
         }
 
         for (z, (card, start_pos)) in cards.into_iter().enumerate() {
             let target_pos = start_pos + Vector2::new(0.0, 800.0);
 
-            let ani = Animation {target_pos, target_stack: None, start_delay: 0.3 * z as f32, time_left: 3.0, sound_start: Sounds::None, sound_stop: Sounds::None};
+            let ani = Animation {
+                target_pos,
+                target_stack: None,
+                start_delay: 0.3 * z as f32,
+                time_left: 3.0,
+                sound_start: Sounds::None,
+                sound_stop: Sounds::None,
+            };
             self.state.animate(card, start_pos, 500.0 - z as f32, ani);
         }
     }

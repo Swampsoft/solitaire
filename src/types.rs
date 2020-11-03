@@ -1,11 +1,8 @@
 use std::slice;
 
-use ggez::{Context, GameResult};
 use ggez::graphics;
-pub use ggez::graphics::{Point2, Vector2};
 
 pub use resources::Sounds;
-
 
 pub const CARD_WIDTH: f32 = 123.0;
 pub const CARD_HEIGHT: f32 = 233.0;
@@ -13,6 +10,8 @@ pub const CARD_HEIGHT: f32 = 233.0;
 pub const BUTTON_RADIUS: f32 = 30.0;
 pub const BUTTON_RADIUS_SQUARED: f32 = BUTTON_RADIUS * BUTTON_RADIUS;
 
+pub type Point2 = ggez::nalgebra::Point2<f32>;
+pub type Vector2 = ggez::nalgebra::Vector2<f32>;
 
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
 pub struct Entity(usize);
@@ -27,22 +26,22 @@ impl Entity {
 pub enum Color {
     Red,
     Green,
-    White
+    White,
 }
 
 impl Color {
-    pub fn set_font_color(&self, ctx: &mut Context) -> GameResult<()> {
+    pub fn to_font_color(&self) -> graphics::Color {
         match *self {
-            Color::Red => graphics::set_color(ctx, graphics::Color::new(0.7, 0.2, 0.1, 1.0)),
-            Color::Green => graphics::set_color(ctx, graphics::Color::new(0.1, 0.4, 0.3, 1.0)),
-            Color::White => graphics::set_color(ctx, graphics::Color::new(0.1, 0.1, 0.1, 1.0)),
+            Color::Red => graphics::Color::new(0.7, 0.2, 0.1, 1.0),
+            Color::Green => graphics::Color::new(0.1, 0.4, 0.3, 1.0),
+            Color::White => graphics::Color::new(0.1, 0.1, 0.1, 1.0),
         }
     }
-    pub fn set_icon_color(&self, ctx: &mut Context) -> GameResult<()> {
+    pub fn to_icon_color(&self) -> graphics::Color {
         match *self {
-            Color::Red => graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0)),
-            Color::Green => graphics::set_color(ctx, graphics::Color::new(0.1, 0.4, 0.3, 1.0)),
-            Color::White => graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0)),
+            Color::Red => graphics::Color::new(1.0, 1.0, 1.0, 1.0),
+            Color::Green => graphics::Color::new(0.1, 0.4, 0.3, 1.0),
+            Color::White => graphics::Color::new(1.0, 1.0, 1.0, 1.0),
         }
     }
 }
@@ -99,11 +98,13 @@ impl Stack {
     pub fn new(role: StackRole) -> Stack {
         Stack {
             cards: Vec::new(),
-            role
+            role,
         }
     }
 
-    pub fn len(&self) -> usize { self.cards.len() }
+    pub fn len(&self) -> usize {
+        self.cards.len()
+    }
 
     pub fn iter(&self) -> slice::Iter<Suite> {
         self.cards.iter()
@@ -144,7 +145,7 @@ impl Stack {
     pub fn split(&mut self, at: usize) -> Stack {
         Stack {
             cards: self.cards.split_off(at),
-            role: StackRole::Generic
+            role: StackRole::Generic,
         }
     }
 }

@@ -1,22 +1,24 @@
-
-use utils::all::All;
 use rules;
 use types::*;
+use utils::all::All;
 
 use super::GameState;
 
 impl GameState {
     pub fn button_update_system(&mut self) {
         if !self.dirty || self.busy() {
-            return
+            return;
         }
 
-        for b in self.buttons.iter_mut().filter_map(|x|x.all()) {
+        for b in self.buttons.iter_mut().filter_map(|x| x.all()) {
             if b.state == ButtonState::Down {
-                continue
+                continue;
             }
 
-            let (stacks, ents): (Vec<_>, Vec<Entity>) = self.stacks.iter().zip(self.entities.iter())
+            let (stacks, ents): (Vec<_>, Vec<Entity>) = self
+                .stacks
+                .iter()
+                .zip(self.entities.iter())
                 .filter_map(|(stack, e)| stack.as_ref().map(|s| (s, e)))
                 .unzip();
 
@@ -26,11 +28,11 @@ impl GameState {
                 None => {
                     b.state = ButtonState::Up;
                     b.stacks = None;
-                    continue
+                    continue;
                 }
                 Some((t, s)) => {
                     b.state = ButtonState::Active;
-                    b.stacks = Some((ents[t],[ents[s[0]], ents[s[1]], ents[s[2]], ents[s[3]]]))
+                    b.stacks = Some((ents[t], [ents[s[0]], ents[s[1]], ents[s[2]], ents[s[3]]]))
                 }
             }
         }
@@ -38,18 +40,20 @@ impl GameState {
 
     pub fn auto_move_system(&mut self) {
         if !self.dirty || self.busy() {
-            return
+            return;
         }
         self.dirty = false;
 
         let auto_move;
         {
-            let (stacks, idx): (Vec<_>, Vec<_>) = self.stacks.iter().enumerate()
+            let (stacks, idx): (Vec<_>, Vec<_>) = self
+                .stacks
+                .iter()
+                .enumerate()
                 .filter_map(|(i, stack)| stack.as_ref().map(|s| (s, i)))
                 .unzip();
 
-            auto_move = rules::get_automove(stacks.into_iter())
-                .map(|(t, s)| (idx[t], idx[s]));
+            auto_move = rules::get_automove(stacks.into_iter()).map(|(t, s)| (idx[t], idx[s]));
         }
 
         if let Some((dst, src)) = auto_move {
@@ -72,7 +76,14 @@ impl GameState {
                 target_pos = t_pos + t_stack.get_stackshift() * t_stack.len() as f32;
             }
 
-            let ani = Animation {target_pos, target_stack, start_delay: 0.0, time_left: 0.3, sound_start: Sounds::Sweep, sound_stop: Sounds::None};
+            let ani = Animation {
+                target_pos,
+                target_stack,
+                start_delay: 0.0,
+                time_left: 0.3,
+                sound_start: Sounds::Sweep,
+                sound_stop: Sounds::None,
+            };
             self.animate(card, start_pos, 100.0, ani);
         }
     }

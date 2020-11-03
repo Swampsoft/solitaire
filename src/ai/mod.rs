@@ -6,19 +6,17 @@ use types::{Stack, StackRole, Suite};
 pub enum AiResult {
     Unknown,
     Winable(i32),
-    Lost
+    Lost,
 }
 
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 pub struct AiState {
-    stacks: Vec<Stack>
+    stacks: Vec<Stack>,
 }
 
 impl AiState {
     pub fn new(stacks: Vec<Stack>) -> AiState {
-        AiState {
-            stacks
-        }
+        AiState { stacks }
     }
 
     pub fn astar(&self, mut iterations: usize) -> AiResult {
@@ -29,16 +27,16 @@ impl AiState {
 
         while let Some((depth, state)) = queue.pop() {
             if visited.contains(&state) {
-                continue
+                continue;
             }
 
             if rules::check_victory(state.stacks.iter()) {
-                return AiResult::Winable(depth)
+                return AiResult::Winable(depth);
             }
 
             iterations -= 1;
             if iterations == 0 {
-                return AiResult::Unknown
+                return AiResult::Unknown;
             }
 
             visited.insert(state.clone());
@@ -78,8 +76,16 @@ impl AiState {
         let mut score = 0;
         for stack in &self.stacks {
             match stack.role {
-                StackRole::Dragon => if let Some(Suite::FaceDown) = stack.top() {score += 100},
-                StackRole::Target => if let Some(Suite::Number(n, _)) = stack.top() {score += 10 * n as i32}
+                StackRole::Dragon => {
+                    if let Some(Suite::FaceDown) = stack.top() {
+                        score += 100
+                    }
+                }
+                StackRole::Target => {
+                    if let Some(Suite::Number(n, _)) = stack.top() {
+                        score += 10 * n as i32
+                    }
+                }
                 StackRole::Sorting => score += stack.score(),
                 _ => {}
             }
@@ -109,7 +115,7 @@ impl Stack {
             if rules::is_valid_pair(*l, *u) {
                 score += 1;
             } else {
-                return score
+                return score;
             }
         }
         score

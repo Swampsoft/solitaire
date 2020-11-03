@@ -9,14 +9,12 @@ profiling = ["cpuprofiler"]
 
 
 [dependencies.ggez]
-version = "0.4"
-features = ["cargo-resource-root"]
+version = "0.5"
+#features = ["cargo-resource-root"]
 
 [dependencies]
 cpuprofiler = { version = "0.0.3", optional = true }
-env_logger = "0.5"
+env_logger = "0.8"
 log = "0.4"
-rand = "0.5"
-rodio = "0.7"
-sdl2 = "0.31"
-
+rand = "0.7"
+rodio = "0.9"

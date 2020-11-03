@@ -1,16 +1,15 @@
-
-use ggez::{Context, GameResult};
-use ggez::event::*;
+use ggez::event::{EventHandler, KeyCode, KeyMods, MouseButton};
 use ggez::graphics;
 use ggez::timer;
+use ggez::{Context, GameResult};
 
 use game::Game;
 use resources::Resources;
 
 use ai::{AiResult, AiState};
 
-use super::GameWrapper;
 use super::welcome_state::WelcomeState;
+use super::GameWrapper;
 
 pub struct MainState {
     pub resources: Resources,
@@ -19,7 +18,7 @@ pub struct MainState {
 }
 
 impl MainState {
-    pub fn next_state(self) -> GameWrapper{
+    pub fn next_state(self) -> GameWrapper {
         if self.game.check_win_condition() {
             GameWrapper::Victory(self.into())
         } else {
@@ -28,14 +27,14 @@ impl MainState {
     }
 }
 
-impl EventHandler for MainState  {
+impl EventHandler for MainState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         if !self.resources.music.playing() {
             self.resources.music.set_volume(0.5);
             self.resources.music.play()?;
         }
 
-        let dt = timer::duration_to_f64(timer::get_delta(ctx)) as f32;
+        let dt = timer::duration_to_f64(timer::delta(ctx)) as f32;
         self.game.state.run_update(dt, &mut self.resources);
 
         if self.game.check_win_condition() {
@@ -43,7 +42,7 @@ impl EventHandler for MainState  {
                 self.resources.add_win(ctx);
                 self.win_counted = true;
             }
-            ctx.quit()?;
+            ggez::event::quit(ctx);
         }
 
         Ok(())
@@ -51,35 +50,49 @@ impl EventHandler for MainState  {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         self.game.state.run_render(ctx, &mut self.resources)?;
-        graphics::present(ctx);
+        graphics::present(ctx)?;
         Ok(())
     }
 
-    fn mouse_button_down_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: i32, y: i32) {
-        self.game.state.handle_mouse_button_down(x, y, &mut self.resources);
+    fn mouse_button_down_event(
+        &mut self,
+        _ctx: &mut Context,
+        _button: MouseButton,
+        x: f32,
+        y: f32,
+    ) {
+        self.game
+            .state
+            .handle_mouse_button_down(x, y, &mut self.resources);
     }
 
-    fn mouse_button_up_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: i32, y: i32) {
-        self.game.state.handle_mouse_button_up(x, y, &mut self.resources);
+    fn mouse_button_up_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: f32, y: f32) {
+        self.game
+            .state
+            .handle_mouse_button_up(x, y, &mut self.resources);
     }
 
-    fn mouse_motion_event(&mut self, _ctx: &mut Context, _state: MouseState,
-                          _x: i32, _y: i32, xrel: i32, yrel: i32) {
+    fn mouse_motion_event(&mut self, _ctx: &mut Context, _x: f32, _y: f32, xrel: f32, yrel: f32) {
         self.game.state.handle_mouse_move(xrel, yrel);
     }
 
-    fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool ) {
-
+    fn key_down_event(
+        &mut self,
+        ctx: &mut Context,
+        keycode: KeyCode,
+        _keymod: KeyMods,
+        _repeat: bool,
+    ) {
         match keycode {
-            Keycode::Escape => ctx.quit().unwrap(),
-            Keycode::Backspace => {
+            KeyCode::Escape => ggez::event::quit(ctx),
+            KeyCode::Back => {
                 let ai = AiState::new(self.game.export());
                 match ai.astar(10000) {
                     AiResult::Unknown => println!("?"),
                     AiResult::Winable(n) => println!("{} :-)", n),
                     AiResult::Lost => println!(":-("),
                 }
-            },
+            }
             _ => {}
         }
     }
