@@ -15,6 +15,9 @@ pub struct MainState {
     pub resources: Resources,
     pub game: Game,
     win_counted: bool,
+
+    last_x: f32,
+    last_y: f32,
 }
 
 impl MainState {
@@ -72,7 +75,11 @@ impl EventHandler for MainState {
             .handle_mouse_button_up(x, y, &mut self.resources);
     }
 
-    fn mouse_motion_event(&mut self, _ctx: &mut Context, _x: f32, _y: f32, xrel: f32, yrel: f32) {
+    fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, _xrel: f32, _yrel: f32) {
+        let xrel = x - self.last_x;
+        let yrel = y - self.last_y;
+        self.last_x = x;
+        self.last_y = y;
         self.game.state.handle_mouse_move(xrel, yrel);
     }
 
@@ -105,6 +112,8 @@ impl From<WelcomeState> for MainState {
             resources: old.resources,
             game: old.game,
             win_counted: false,
+            last_x: 0.0,
+            last_y: 0.0,
         }
     }
 }
