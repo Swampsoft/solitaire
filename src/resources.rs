@@ -1,13 +1,12 @@
-
-use std::collections::HashMap;
 use std::collections::hash_map::Entry;
+use std::collections::HashMap;
 use std::io::{Read, Write};
 
-use ggez::graphics::{Font, Image, Text};
+use ggez::audio::{SoundSource, Source};
+use ggez::graphics::{Font, Image, Scale, Text, TextFragment};
 use ggez::*;
 
 use types::{ButtonState, Color};
-use custom_audio::Source;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Sounds {
@@ -44,28 +43,50 @@ pub struct Resources {
 impl Resources {
     pub fn new(ctx: &mut Context) -> GameResult<Resources> {
         //let card_font = Font::default_font()?;
-        let card_font = Font::new_px(ctx, "/glacial/GlacialIndifference-Bold.ttf", 32)?;
-        let ui_font = Font::new_px(ctx, "/glacial/GlacialIndifference-Bold.ttf", 56)?;
+        let card_font = Font::new(ctx, "/glacial/GlacialIndifference-Bold.ttf")?;
+        let ui_font = Font::new(ctx, "/glacial/GlacialIndifference-Bold.ttf")?;
 
         let mut numbers = Vec::new();
         for i in 1..10 {
-            let mut nr = Text::new(ctx, &i.to_string(), &card_font)?;
-            nr.set_filter(graphics::FilterMode::Nearest);
+            let nr = Text::new(
+                TextFragment::new(i.to_string())
+                    .font(card_font)
+                    .scale(Scale::uniform(32.0)),
+            );
+            //nr.set_filter(graphics::FilterMode::Nearest);
             numbers.push(nr);
         }
 
         let mut suite_icons = HashMap::new();
-        suite_icons.insert(Color::Green, Image::new(ctx, "/textures/solitaire/small_icons/bamboo.png")?);
-        suite_icons.insert(Color::Red, Image::new(ctx, "/textures/solitaire/small_icons/coins.png")?);
-        suite_icons.insert(Color::White, Image::new(ctx, "/textures/solitaire/small_icons/characters.png")?);
+        suite_icons.insert(
+            Color::Green,
+            Image::new(ctx, "/textures/solitaire/small_icons/bamboo.png")?,
+        );
+        suite_icons.insert(
+            Color::Red,
+            Image::new(ctx, "/textures/solitaire/small_icons/coins.png")?,
+        );
+        suite_icons.insert(
+            Color::White,
+            Image::new(ctx, "/textures/solitaire/small_icons/characters.png")?,
+        );
         for img in suite_icons.values_mut() {
             img.set_filter(graphics::FilterMode::Nearest);
         }
 
         let mut dragon_icons = HashMap::new();
-        dragon_icons.insert(Color::Green, Image::new(ctx, "/textures/solitaire/small_icons/dragon_green.png")?);
-        dragon_icons.insert(Color::Red, Image::new(ctx, "/textures/solitaire/small_icons/dragon_red.png")?);
-        dragon_icons.insert(Color::White, Image::new(ctx, "/textures/solitaire/small_icons/dragon_white.png")?);
+        dragon_icons.insert(
+            Color::Green,
+            Image::new(ctx, "/textures/solitaire/small_icons/dragon_green.png")?,
+        );
+        dragon_icons.insert(
+            Color::Red,
+            Image::new(ctx, "/textures/solitaire/small_icons/dragon_red.png")?,
+        );
+        dragon_icons.insert(
+            Color::White,
+            Image::new(ctx, "/textures/solitaire/small_icons/dragon_white.png")?,
+        );
         for img in dragon_icons.values_mut() {
             img.set_filter(graphics::FilterMode::Nearest);
         }
@@ -78,13 +99,22 @@ impl Resources {
         let mut white = Vec::with_capacity(9);
         let mut red = Vec::with_capacity(9);
         for i in 1..10 {
-            let mut img = Image::new(ctx, &format!("/textures/solitaire/large_icons/bamboo_{}.png", i))?;
+            let mut img = Image::new(
+                ctx,
+                &format!("/textures/solitaire/large_icons/bamboo_{}.png", i),
+            )?;
             img.set_filter(graphics::FilterMode::Linear);
             green.push(img);
-            let mut img = Image::new(ctx, &format!("/textures/solitaire/large_icons/coins_{}.png", i))?;
+            let mut img = Image::new(
+                ctx,
+                &format!("/textures/solitaire/large_icons/coins_{}.png", i),
+            )?;
             img.set_filter(graphics::FilterMode::Linear);
             red.push(img);
-            let mut img = Image::new(ctx, &format!("/textures/solitaire/large_icons/char_{}.png", i))?;
+            let mut img = Image::new(
+                ctx,
+                &format!("/textures/solitaire/large_icons/char_{}.png", i),
+            )?;
             img.set_filter(graphics::FilterMode::Linear);
             white.push(img);
         }
@@ -93,9 +123,18 @@ impl Resources {
         suite_images.insert(Color::White, white);
 
         let mut dragon_images = HashMap::new();
-        dragon_images.insert(Color::Green, Image::new(ctx, "/textures/solitaire/large_icons/dragon_green.png")?);
-        dragon_images.insert(Color::Red, Image::new(ctx, "/textures/solitaire/large_icons/dragon_red.png")?);
-        dragon_images.insert(Color::White, Image::new(ctx, "/textures/solitaire/large_icons/dragon_white.png")?);
+        dragon_images.insert(
+            Color::Green,
+            Image::new(ctx, "/textures/solitaire/large_icons/dragon_green.png")?,
+        );
+        dragon_images.insert(
+            Color::Red,
+            Image::new(ctx, "/textures/solitaire/large_icons/dragon_red.png")?,
+        );
+        dragon_images.insert(
+            Color::White,
+            Image::new(ctx, "/textures/solitaire/large_icons/dragon_white.png")?,
+        );
         for img in dragon_images.values_mut() {
             img.set_filter(graphics::FilterMode::Linear);
         }
@@ -104,15 +143,42 @@ impl Resources {
         flower_image.set_filter(graphics::FilterMode::Linear);
 
         let mut button_images = HashMap::new();
-        button_images.insert((Color::Green, ButtonState::Active), Image::new(ctx, "/textures/solitaire/button_green_active.png")?);
-        button_images.insert((Color::Green, ButtonState::Up), Image::new(ctx, "/textures/solitaire/button_green_up.png")?);
-        button_images.insert((Color::Green, ButtonState::Down), Image::new(ctx, "/textures/solitaire/button_green_down.png")?);
-        button_images.insert((Color::Red, ButtonState::Active), Image::new(ctx, "/textures/solitaire/button_red_active.png")?);
-        button_images.insert((Color::Red, ButtonState::Up), Image::new(ctx, "/textures/solitaire/button_red_up.png")?);
-        button_images.insert((Color::Red, ButtonState::Down), Image::new(ctx, "/textures/solitaire/button_red_down.png")?);
-        button_images.insert((Color::White, ButtonState::Active), Image::new(ctx, "/textures/solitaire/button_white_active.png")?);
-        button_images.insert((Color::White, ButtonState::Up), Image::new(ctx, "/textures/solitaire/button_white_up.png")?);
-        button_images.insert((Color::White, ButtonState::Down), Image::new(ctx, "/textures/solitaire/button_white_down.png")?);
+        button_images.insert(
+            (Color::Green, ButtonState::Active),
+            Image::new(ctx, "/textures/solitaire/button_green_active.png")?,
+        );
+        button_images.insert(
+            (Color::Green, ButtonState::Up),
+            Image::new(ctx, "/textures/solitaire/button_green_up.png")?,
+        );
+        button_images.insert(
+            (Color::Green, ButtonState::Down),
+            Image::new(ctx, "/textures/solitaire/button_green_down.png")?,
+        );
+        button_images.insert(
+            (Color::Red, ButtonState::Active),
+            Image::new(ctx, "/textures/solitaire/button_red_active.png")?,
+        );
+        button_images.insert(
+            (Color::Red, ButtonState::Up),
+            Image::new(ctx, "/textures/solitaire/button_red_up.png")?,
+        );
+        button_images.insert(
+            (Color::Red, ButtonState::Down),
+            Image::new(ctx, "/textures/solitaire/button_red_down.png")?,
+        );
+        button_images.insert(
+            (Color::White, ButtonState::Active),
+            Image::new(ctx, "/textures/solitaire/button_white_active.png")?,
+        );
+        button_images.insert(
+            (Color::White, ButtonState::Up),
+            Image::new(ctx, "/textures/solitaire/button_white_up.png")?,
+        );
+        button_images.insert(
+            (Color::White, ButtonState::Down),
+            Image::new(ctx, "/textures/solitaire/button_white_down.png")?,
+        );
 
         let r = Resources {
             wins: Resources::load_wins(ctx)?,
@@ -139,10 +205,14 @@ impl Resources {
         Ok(r)
     }
 
-    pub fn get_text(&mut self, ctx: &mut Context, s: &str) -> GameResult<&Text> {
+    pub fn get_text(&mut self, _ctx: &mut Context, s: &str) -> GameResult<&Text> {
         let text = match self.text.entry(s.to_owned()) {
             Entry::Occupied(o) => o.into_mut(),
-            Entry::Vacant(v) => v.insert(Text::new(ctx, s, &self.ui_font)?)
+            Entry::Vacant(v) => v.insert(Text::new(
+                TextFragment::new(s)
+                    .font(self.ui_font)
+                    .scale(Scale::uniform(56.0)),
+            )),
         };
         Ok(text)
     }
@@ -154,7 +224,8 @@ impl Resources {
             Sounds::Place => self.place_sound.play(),
             Sounds::Deal => self.deal_sound.play(),
             Sounds::Sweep => self.sweep_sound.play(),
-        }.unwrap();
+        }
+        .unwrap();
     }
 
     pub fn wins(&self) -> u32 {
@@ -166,30 +237,27 @@ impl Resources {
     }
 
     fn load_wins(ctx: &mut Context) -> GameResult<u32> {
-        match ctx.filesystem.open("/wins.txt") {
+        match ggez::filesystem::open(ctx, "/wins.txt") {
             Ok(mut f) => {
                 let mut string = String::new();
                 f.read_to_string(&mut string).unwrap();
                 let n: u32 = string.parse().unwrap();
                 Ok(n)
-            },
-            Err(GameError::ResourceNotFound(_, _)) => {
-                Ok(0)
             }
-            Err(e) => Err(e)
+            Err(GameError::ResourceNotFound(_, _)) => Ok(0),
+            Err(e) => Err(e),
         }
     }
 
     pub fn store_wins(&self, ctx: &mut Context, n: u32) {
-        let mut f = ctx.filesystem.create("/wins.txt").unwrap();
+        let mut f = ggez::filesystem::create(ctx, "/wins.txt").unwrap();
         f.write_all(format!("{}", n).as_bytes()).unwrap();
     }
 }
 
-
 pub enum Audio {
     Source(Source),
-    None
+    None,
 }
 
 impl Audio {
@@ -210,7 +278,7 @@ impl Audio {
 
     pub fn set_volume(&mut self, vol: f32) {
         match *self {
-            Audio::None => {},
+            Audio::None => {}
             Audio::Source(ref mut s) => s.set_volume(vol),
         }
     }

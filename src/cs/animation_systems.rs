@@ -1,6 +1,5 @@
-
-use utils::all::All;
 use types::*;
+use utils::all::All;
 
 use super::GameState;
 
@@ -12,10 +11,13 @@ impl GameState {
 
         let mut finished = Vec::new();
 
-        for (p, a, e) in self.positions.iter_mut()
+        for (p, a, e) in self
+            .positions
+            .iter_mut()
             .zip(self.animations.iter_mut())
             .zip(self.entities.iter())
-            .filter_map(|x| x.all()) {
+            .filter_map(|x| x.all())
+        {
             if a.time_left > 0.0 {
                 busy = true;
                 let dt = if a.start_delay > 0.0 {
@@ -25,7 +27,7 @@ impl GameState {
                 } else {
                     dt
                 };
-                if a.sound_start != Sounds::None && a.start_delay <= 0.0{
+                if a.sound_start != Sounds::None && a.start_delay <= 0.0 {
                     res.play_sound(a.sound_start);
                     a.sound_start = Sounds::None;
                 }

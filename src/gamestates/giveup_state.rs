@@ -1,14 +1,14 @@
-use ggez::{Context, GameResult};
 use ggez::event::*;
 use ggez::graphics;
 use ggez::timer;
+use ggez::{Context, GameResult};
 
 use game::Game;
 use resources::Resources;
 
-use super::GameWrapper;
 use super::main_state::MainState;
 use super::victory_state::VictoryState;
+use super::GameWrapper;
 
 pub struct GiveupState {
     pub resources: Resources,
@@ -23,21 +23,20 @@ impl GiveupState {
 
 impl EventHandler for GiveupState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let dt = timer::duration_to_f64(timer::get_delta(ctx)) as f32;
+        let dt = timer::duration_to_f64(timer::delta(ctx)) as f32;
         self.game.state.run_update(dt, &mut self.resources);
 
         if !self.game.state.busy() {
-            ctx.quit().unwrap();
+            ggez::event::quit(ctx);
         }
 
         Ok(())
     }
 
-
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         self.game.state.run_render(ctx, &mut self.resources)?;
 
-        graphics::present(ctx);
+        graphics::present(ctx)?;
         Ok(())
     }
 }

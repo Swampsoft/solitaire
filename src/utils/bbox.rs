@@ -1,19 +1,18 @@
-
 use std::f32;
 
-use ggez::graphics::Point2;
+use types::Point2;
 
 #[derive(Clone, Copy, Debug)]
 pub struct BoundingBox {
     pub topleft: Point2,
-    pub bottomright: Point2
+    pub bottomright: Point2,
 }
 
 impl BoundingBox {
     pub fn new(l: f32, r: f32, t: f32, b: f32) -> BoundingBox {
         BoundingBox {
             topleft: Point2::new(l, t),
-            bottomright: Point2::new(r, b)
+            bottomright: Point2::new(r, b),
         }
     }
 

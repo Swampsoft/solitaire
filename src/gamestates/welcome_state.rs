@@ -1,15 +1,15 @@
-
-use ggez::{Context, GameResult};
-use ggez::graphics;
-use ggez::graphics::Point2;
 use ggez::event::*;
+use ggez::graphics;
+use ggez::mint::Point2;
 use ggez::timer;
+use ggez::{Context, GameResult};
 
-use super::GameWrapper;
-use super::victory_state::VictoryState;
 use super::giveup_state::GiveupState;
+use super::victory_state::VictoryState;
+use super::GameWrapper;
 
 use game::Game;
+use ggez::graphics::DrawParam;
 use resources::Resources;
 
 pub struct WelcomeState {
@@ -29,7 +29,7 @@ impl WelcomeState {
         })
     }
 
-    pub fn next_state(self) -> GameWrapper{
+    pub fn next_state(self) -> GameWrapper {
         if self.move_on {
             GameWrapper::Game(self.into())
         } else {
@@ -44,7 +44,7 @@ impl EventHandler for WelcomeState {
             // skip first frame because it has a super high delta-time
             self.ready = true;
         } else {
-            let dt = timer::duration_to_f64(timer::get_delta(ctx)) as f32;
+            let dt = timer::duration_to_f64(timer::delta(ctx)) as f32;
             self.game.state.run_update(dt, &mut self.resources);
         }
 
@@ -54,19 +54,29 @@ impl EventHandler for WelcomeState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         self.game.state.run_render(ctx, &mut self.resources)?;
 
-        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
-        let text = self.resources.get_text(ctx, "Click anywhere to start a new game.")?;
-        let pos = Point2::new(640.0 - text.width() as f32 / 2.0, 403.0 - text.height() as f32 / 2.0);
-        graphics::draw(ctx, text,pos, 0.0)?;
+        let text = self
+            .resources
+            .get_text(ctx, "Click anywhere to start a new game.")?;
+        let pos = Point2::from([
+            640.0 - text.width(ctx) as f32 / 2.0,
+            403.0 - text.height(ctx) as f32 / 2.0,
+        ]);
+        graphics::draw(ctx, text, DrawParam::new().dest(pos))?;
 
-        graphics::present(ctx);
+        graphics::present(ctx)?;
         Ok(())
     }
 
-    fn mouse_button_down_event(&mut self, ctx: &mut Context, _button: MouseButton, _x: i32, _y: i32) {
+    fn mouse_button_down_event(
+        &mut self,
+        ctx: &mut Context,
+        _button: MouseButton,
+        _x: f32,
+        _y: f32,
+    ) {
         if !self.game.state.busy() {
             self.move_on = true;
-            ctx.quit().unwrap();
+            ggez::event::quit(ctx);
         }
     }
 }
