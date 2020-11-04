@@ -7,20 +7,15 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build
-        run: cargo build --verbose --release
-      - name: Run tests
-        run: cargo test --verbose --release
-
   release-linux:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install -y libudev-dev
 
       - name: Install latest rust toolchain
         uses: actions-rs/toolchain@v1
