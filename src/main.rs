@@ -25,7 +25,7 @@ use ggez::{conf, ContextBuilder};
 
 use gamestates::GameWrapper;
 
-const SHENZHEN_PATH: &str = ".local/share/Steam/SteamApps/common/SHENZHEN IO/Content/";
+const SHENZHEN_PATH: &str = ".local/share/Steam/steamapps/common/SHENZHEN IO/Content/";
 
 fn main() {
     env_logger::init();
