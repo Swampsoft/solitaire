@@ -1,4 +1,4 @@
-use rand::{seq::SliceRandom, thread_rng};
+use rand::{rng, seq::SliceRandom};
 
 use cs::GameState;
 use types::*;
@@ -123,7 +123,7 @@ impl Game {
         game
     }
 
-    pub fn export<'a>(&'a self) -> Vec<Stack> {
+    pub fn export(&self) -> Vec<Stack> {
         self.all_stacks
             .iter()
             .map(|e| (*self.state.get_stack(*e).unwrap()).clone())
@@ -157,7 +157,7 @@ impl Game {
 
         cards.push(Suite::Flower);
 
-        cards.shuffle(&mut thread_rng());
+        cards.shuffle(&mut rng());
 
         Stack {
             cards,

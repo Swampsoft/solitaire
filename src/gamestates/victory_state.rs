@@ -1,15 +1,13 @@
 use ggez::event::*;
-use ggez::graphics;
 use ggez::mint::Point2;
-use ggez::timer;
 use ggez::{Context, GameResult};
 
 use game::Game;
 use resources::Resources;
 
 use super::main_state::MainState;
-use super::GameWrapper;
-use ggez::graphics::DrawParam;
+use ggez::graphics::{Canvas, DrawParam, Drawable};
+use ggez::input::mouse::MouseButton;
 
 pub struct VictoryState {
     pub resources: Resources,
@@ -17,35 +15,26 @@ pub struct VictoryState {
     pub game: Game,
 }
 
-impl VictoryState {
-    pub fn next_state(self) -> GameWrapper {
-        if self.move_on {
-            GameWrapper::Welcome(self.into())
-        } else {
-            GameWrapper::GiveUp(self.into())
-        }
-    }
-}
-
 impl EventHandler for VictoryState {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let dt = timer::duration_to_f64(timer::delta(ctx)) as f32;
+        let dt = ctx.time.delta().as_secs_f32();
         self.game.state.run_update(dt, &mut self.resources);
 
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.game.state.run_render(ctx, &mut self.resources)?;
+        let mut canvas = Canvas::from_frame(&ctx.gfx, None);
+        self.game
+            .state
+            .run_render(ctx, &mut self.resources, &mut canvas)?;
 
         let text = self.resources.get_text(ctx, "Congratulations.")?;
-        let pos = Point2::from([
-            640.0 - text.width(ctx) as f32 / 2.0,
-            403.0 - text.height(ctx) as f32 / 2.0,
-        ]);
-        graphics::draw(ctx, text, DrawParam::new().dest(pos))?;
+        let dim = text.dimensions(&ctx.gfx);
+        let pos = Point2::from([640.0 - dim.w / 2.0, 403.0 - dim.h / 2.0]);
+        canvas.draw(text, DrawParam::new().dest(pos));
 
-        graphics::present(ctx)?;
+        canvas.finish(&mut ctx.gfx)?;
         Ok(())
     }
 
@@ -55,8 +44,9 @@ impl EventHandler for VictoryState {
         _button: MouseButton,
         _x: f32,
         _y: f32,
-    ) {
-        ggez::event::quit(ctx);
+    ) -> GameResult<()> {
+        ctx.request_quit();
+        Ok(())
     }
 }
 

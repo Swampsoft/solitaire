@@ -6,7 +6,6 @@ extern crate ggez;
 #[macro_use]
 extern crate log;
 extern crate rand;
-extern crate rodio;
 
 mod gamestates;
 
@@ -33,7 +32,6 @@ fn main() {
     let c = conf::Conf {
         window_mode: conf::WindowMode::default().dimensions(1280.0, 806.0),
         window_setup: conf::WindowSetup::default().title("Solitaire Clone"),
-        backend: conf::Backend::OpenGL { major: 3, minor: 2 },
         ..conf::Conf::default()
     };
 
@@ -50,20 +48,15 @@ fn main() {
         std::path::PathBuf::from("./resources")
     };
 
-    let (mut ctx, mut event_loop) = ContextBuilder::new("solitaire_clone", "Swampsoft Games")
-        .conf(c)
+    let (mut ctx, event_loop) = ContextBuilder::new("solitaire_clone", "Swampsoft Games")
+        .default_conf(c)
         .add_resource_path(resource_dir)
         .add_resource_path(env::home_dir().unwrap().join(SHENZHEN_PATH))
         .build()
         .unwrap();
 
-    let mut state = GameWrapper::new(&mut ctx).unwrap();
-    loop {
-        if let GameWrapper::Quit = state {
-            break;
-        }
-        state = state.run(&mut ctx, &mut event_loop).unwrap();
-    }
+    let state = GameWrapper::new(&mut ctx).unwrap();
+    ggez::event::run(ctx, event_loop, state).unwrap();
 
     #[cfg(feature = "profiling")]
     PROFILER.lock().unwrap().stop().unwrap();

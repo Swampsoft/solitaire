@@ -10,8 +10,8 @@ pub const CARD_HEIGHT: f32 = 233.0;
 pub const BUTTON_RADIUS: f32 = 30.0;
 pub const BUTTON_RADIUS_SQUARED: f32 = BUTTON_RADIUS * BUTTON_RADIUS;
 
-pub type Point2 = ggez::nalgebra::Point2<f32>;
-pub type Vector2 = ggez::nalgebra::Vector2<f32>;
+pub type Point2 = nalgebra::Point2<f32>;
+pub type Vector2 = nalgebra::Vector2<f32>;
 
 #[derive(Debug, Copy, Clone, Hash, Eq, PartialEq)]
 pub struct Entity(usize);
@@ -106,7 +106,7 @@ impl Stack {
         self.cards.len()
     }
 
-    pub fn iter(&self) -> slice::Iter<Suite> {
+    pub fn iter(&self) -> slice::Iter<'_, Suite> {
         self.cards.iter()
     }
 

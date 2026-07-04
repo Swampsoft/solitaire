@@ -1,15 +1,13 @@
 use ggez::event::*;
-use ggez::graphics;
 use ggez::mint::Point2;
-use ggez::timer;
 use ggez::{Context, GameResult};
 
 use super::giveup_state::GiveupState;
 use super::victory_state::VictoryState;
-use super::GameWrapper;
 
 use game::Game;
-use ggez::graphics::DrawParam;
+use ggez::graphics::{Canvas, DrawParam, Drawable};
+use ggez::input::mouse::MouseButton;
 use resources::Resources;
 
 pub struct WelcomeState {
@@ -28,14 +26,6 @@ impl WelcomeState {
             ready: false,
         })
     }
-
-    pub fn next_state(self) -> GameWrapper {
-        if self.move_on {
-            GameWrapper::Game(self.into())
-        } else {
-            GameWrapper::Quit
-        }
-    }
 }
 
 impl EventHandler for WelcomeState {
@@ -44,7 +34,7 @@ impl EventHandler for WelcomeState {
             // skip first frame because it has a super high delta-time
             self.ready = true;
         } else {
-            let dt = timer::duration_to_f64(timer::delta(ctx)) as f32;
+            let dt = ctx.time.delta().as_secs_f32();
             self.game.state.run_update(dt, &mut self.resources);
         }
 
@@ -52,18 +42,19 @@ impl EventHandler for WelcomeState {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.game.state.run_render(ctx, &mut self.resources)?;
+        let mut canvas = Canvas::from_frame(&ctx.gfx, None);
+        self.game
+            .state
+            .run_render(ctx, &mut self.resources, &mut canvas)?;
 
         let text = self
             .resources
             .get_text(ctx, "Click anywhere to start a new game.")?;
-        let pos = Point2::from([
-            640.0 - text.width(ctx) as f32 / 2.0,
-            403.0 - text.height(ctx) as f32 / 2.0,
-        ]);
-        graphics::draw(ctx, text, DrawParam::new().dest(pos))?;
+        let dim = text.dimensions(&ctx.gfx);
+        let pos = Point2::from([640.0 - dim.w / 2.0, 403.0 - dim.h / 2.0]);
+        canvas.draw(text, DrawParam::new().dest(pos));
 
-        graphics::present(ctx)?;
+        canvas.finish(&mut ctx.gfx)?;
         Ok(())
     }
 
@@ -73,11 +64,12 @@ impl EventHandler for WelcomeState {
         _button: MouseButton,
         _x: f32,
         _y: f32,
-    ) {
+    ) -> GameResult<()> {
         if !self.game.state.busy() {
             self.move_on = true;
-            ggez::event::quit(ctx);
+            ctx.request_quit();
         }
+        Ok(())
     }
 }
 
