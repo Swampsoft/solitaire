@@ -1,8 +1,8 @@
-use game::Game;
+use crate::game::Game;
 use ggez::event::*;
 use ggez::graphics::Canvas;
 use ggez::{Context, GameResult};
-use resources::Resources;
+use crate::resources::Resources;
 
 use super::main_state::MainState;
 use super::victory_state::VictoryState;

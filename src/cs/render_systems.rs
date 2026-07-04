@@ -6,9 +6,9 @@ use ggez::graphics;
 use ggez::graphics::{Canvas, DrawParam, Drawable, Sampler};
 use ggez::{Context, GameResult};
 
-use resources::Resources;
-use types::*;
-use utils::all::All;
+use crate::resources::Resources;
+use crate::types::*;
+use crate::utils::all::All;
 
 use super::Component;
 

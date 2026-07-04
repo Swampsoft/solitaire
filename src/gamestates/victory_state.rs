@@ -2,8 +2,8 @@ use ggez::event::*;
 use ggez::mint::Point2;
 use ggez::{Context, GameResult};
 
-use game::Game;
-use resources::Resources;
+use crate::game::Game;
+use crate::resources::Resources;
 
 use super::main_state::MainState;
 use ggez::graphics::{Canvas, DrawParam, Drawable};

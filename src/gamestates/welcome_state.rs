@@ -5,10 +5,10 @@ use ggez::{Context, GameResult};
 use super::giveup_state::GiveupState;
 use super::victory_state::VictoryState;
 
-use game::Game;
+use crate::game::Game;
 use ggez::graphics::{Canvas, DrawParam, Drawable};
 use ggez::input::mouse::MouseButton;
-use resources::Resources;
+use crate::resources::Resources;
 
 pub struct WelcomeState {
     pub resources: Resources,

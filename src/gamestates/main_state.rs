@@ -1,13 +1,13 @@
-use game::Game;
+use crate::game::Game;
 use ggez::event::EventHandler;
 use ggez::graphics::Canvas;
 use ggez::input::keyboard::{KeyCode, KeyInput};
 use ggez::input::mouse::MouseButton;
 use ggez::winit::keyboard::PhysicalKey;
 use ggez::{Context, GameResult};
-use resources::Resources;
+use crate::resources::Resources;
 
-use ai::{AiResult, AiState};
+use crate::ai::{AiResult, AiState};
 
 use super::welcome_state::WelcomeState;
 

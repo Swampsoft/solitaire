@@ -1,6 +1,6 @@
 use std::f32;
 
-use types::Point2;
+use crate::types::Point2;
 
 #[derive(Clone, Copy, Debug)]
 pub struct BoundingBox {

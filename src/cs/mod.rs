@@ -9,8 +9,8 @@ mod input_systems;
 mod render_systems;
 mod rule_systems;
 
-use resources::Resources;
-use types::*;
+use crate::resources::Resources;
+use crate::types::*;
 
 use self::render_systems::*;
 

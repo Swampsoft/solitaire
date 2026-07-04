@@ -1,7 +1,7 @@
 use rand::{rng, seq::SliceRandom};
 
-use cs::GameState;
-use types::*;
+use crate::cs::GameState;
+use crate::types::*;
 
 pub struct Game {
     pub state: GameState,

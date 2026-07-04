@@ -22,7 +22,7 @@ use std::env;
 
 use ggez::{conf, ContextBuilder};
 
-use gamestates::GameWrapper;
+use crate::gamestates::GameWrapper;
 
 const SHENZHEN_PATH: &str = ".local/share/Steam/steamapps/common/SHENZHEN IO/Content/";
 

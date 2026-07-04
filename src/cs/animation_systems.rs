@@ -1,9 +1,9 @@
-use types::*;
-use utils::all::All;
+use crate::types::*;
+use crate::utils::all::All;
 
 use super::GameState;
 
-use resources::Resources;
+use crate::resources::Resources;
 
 impl GameState {
     pub fn animation_update_system(&mut self, dt: f32, res: &mut Resources) -> bool {

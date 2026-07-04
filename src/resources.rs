@@ -5,7 +5,7 @@ use std::io::{Read, Write};
 use ggez::audio::{SoundSource, Source};
 use ggez::graphics::{FontData, Image, PxScale, Text, TextFragment};
 use ggez::*;
-use types::{ButtonState, Color};
+use crate::types::{ButtonState, Color};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Sounds {

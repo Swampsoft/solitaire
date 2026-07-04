@@ -1,6 +1,7 @@
 [package]
 name = "solitaire"
 version = "0.3.0"
+edition = "2018"
 authors = ["Swampsoft <https://github.com/Swampsoft>"]
 
 [features]

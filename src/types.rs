@@ -2,7 +2,7 @@ use std::slice;
 
 use ggez::graphics;
 
-pub use resources::Sounds;
+pub use crate::resources::Sounds;
 
 pub const CARD_WIDTH: f32 = 123.0;
 pub const CARD_HEIGHT: f32 = 233.0;
