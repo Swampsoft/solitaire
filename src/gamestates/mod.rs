@@ -81,10 +81,16 @@ impl GameWrapper {
 
 impl EventHandler for GameWrapper {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
+        if matches!(self.state, Quit) {
+            return Ok(());
+        }
         self.handler().update(ctx)
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult {
+        if matches!(self.state, Quit) {
+            return Ok(());
+        }
         self.handler().draw(ctx)
     }
 
