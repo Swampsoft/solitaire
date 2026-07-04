@@ -29,6 +29,7 @@ use self::GameState::*;
 use ggez::event::EventHandler;
 use ggez::input::keyboard::KeyInput;
 use ggez::input::mouse::MouseButton;
+use log::info;
 
 impl GameWrapper {
     pub fn new(ctx: &mut Context) -> GameResult<Self> {

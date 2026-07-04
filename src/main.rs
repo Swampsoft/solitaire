@@ -1,15 +1,5 @@
-#[cfg(feature = "profiling")]
-extern crate cpuprofiler;
-
-extern crate env_logger;
-extern crate ggez;
-#[macro_use]
-extern crate log;
-extern crate rand;
-
-mod gamestates;
-
 mod ai;
+mod gamestates;
 //mod custom_audio;
 mod cs;
 mod game;
@@ -20,7 +10,7 @@ mod utils;
 
 use std::env;
 
-use ggez::{conf, ContextBuilder};
+use ggez::{ContextBuilder, conf};
 
 use crate::gamestates::GameWrapper;
 
