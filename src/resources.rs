@@ -1,11 +1,11 @@
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 use std::io::{Read, Write};
 
+use crate::types::{ButtonState, Color};
 use ggez::audio::{SoundSource, Source};
 use ggez::graphics::{FontData, Image, PxScale, Text, TextFragment};
 use ggez::*;
-use crate::types::{ButtonState, Color};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Sounds {

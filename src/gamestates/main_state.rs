@@ -1,11 +1,11 @@
 use crate::game::Game;
+use crate::resources::Resources;
 use ggez::event::EventHandler;
 use ggez::graphics::Canvas;
 use ggez::input::keyboard::{KeyCode, KeyInput};
 use ggez::input::mouse::MouseButton;
 use ggez::winit::keyboard::PhysicalKey;
 use ggez::{Context, GameResult};
-use crate::resources::Resources;
 
 use crate::ai::{AiResult, AiState};
 

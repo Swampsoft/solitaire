@@ -6,9 +6,9 @@ use super::giveup_state::GiveupState;
 use super::victory_state::VictoryState;
 
 use crate::game::Game;
+use crate::resources::Resources;
 use ggez::graphics::{Canvas, DrawParam, Drawable};
 use ggez::input::mouse::MouseButton;
-use crate::resources::Resources;
 
 pub struct WelcomeState {
     pub resources: Resources,
