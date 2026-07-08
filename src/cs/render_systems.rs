@@ -3,12 +3,12 @@ use std::collections::BinaryHeap;
 use std::f32;
 
 use ggez::graphics;
-use ggez::graphics::{DrawParam, Drawable};
+use ggez::graphics::{Canvas, DrawParam, Drawable, Sampler};
 use ggez::{Context, GameResult};
 
-use resources::Resources;
-use types::*;
-use utils::all::All;
+use crate::resources::Resources;
+use crate::types::*;
+use crate::utils::all::All;
 
 use super::Component;
 
@@ -22,10 +22,17 @@ pub struct RenderQueue {
 }
 
 impl RenderQueue {
-    pub fn render(&mut self, ctx: &mut Context, res: &Resources) -> GameResult<()> {
+    pub fn render(
+        &mut self,
+        ctx: &mut Context,
+        res: &Resources,
+        canvas: &mut Canvas,
+    ) -> GameResult<()> {
         while let Some(cmd) = self.queue.pop() {
             match cmd {
-                DrawCommand::Card { pos, suite, .. } => self.render_card(pos, suite, ctx, res)?,
+                DrawCommand::Card { pos, suite, .. } => {
+                    self.render_card(pos, suite, ctx, res, canvas)?
+                }
             }
         }
         Ok(())
@@ -35,31 +42,31 @@ impl RenderQueue {
         &self,
         ctx: &mut Context,
         res: &mut Resources,
+        canvas: &mut Canvas,
     ) -> GameResult<()> {
         //graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         //graphics::draw(ctx, &res.table_image, Point2::new(0.0, 0.0), 0.0)?;
-        graphics::draw(ctx, &res.table_image, DrawParam::new())?;
+        canvas.draw(&res.table_image, DrawParam::new());
 
         //graphics::set_color(ctx, graphics::Color::new(0.0, 0.0, 0.0, 1.0))?;
         let txt = format!("Win Count: {}", res.wins());
         let text = res.get_text(ctx, &txt)?;
-        let pos = Point2::new(0.0, 806.0 - text.height(ctx) as f32);
+        let pos = Point2::new(0.0, 806.0 - text.dimensions(ctx).h);
         //graphics::draw(ctx, text,pos, 0.0)?;
-        graphics::draw(
-            ctx,
+        canvas.draw(
             text,
             DrawParam::new()
                 .dest(pos)
                 .color(graphics::Color::new(0.0, 0.0, 0.0, 1.0)),
-        )?;
+        );
 
         Ok(())
     }
 
     pub fn button_render_system(
         &self,
-        ctx: &mut Context,
         res: &Resources,
+        canvas: &mut Canvas,
         pos: &Component<Point2>,
         btn: &Component<Button>,
     ) -> GameResult<()> {
@@ -72,7 +79,7 @@ impl RenderQueue {
             let img = &res.button_images[&(b.color, b.state)];
             //img.draw(ctx, p - Vector2::new(img.width() as f32, img.height() as f32) / 2.0, 0.0)?;
             let pos = p - Vector2::new(img.width() as f32, img.height() as f32) / 2.0;
-            img.draw(ctx, DrawParam::new().dest(pos))?;
+            img.draw(canvas, DrawParam::new().dest(pos));
             //graphics::circle(ctx, graphics::DrawMode::Line(1.0), self.pos, RADIUS, 0.1)?;
         }
         Ok(())
@@ -98,7 +105,7 @@ impl RenderQueue {
                 //graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
                 self.queue.push(DrawCommand::Card {
                     z,
-                    pos: pos,
+                    pos,
                     suite: *card,
                 });
                 pos += dpos;
@@ -113,125 +120,122 @@ impl RenderQueue {
         suite: Suite,
         ctx: &mut Context,
         res: &Resources,
+        canvas: &mut Canvas,
     ) -> GameResult<()> {
         //graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         match suite {
             Suite::FaceDown => {
-                res.card_back.draw(ctx, DrawParam::new().dest(pos))?;
+                res.card_back.draw(canvas, DrawParam::new().dest(pos));
                 return Ok(());
             }
             Suite::Flower => {
-                res.card_front.draw(ctx, DrawParam::new().dest(pos))?;
+                res.card_front.draw(canvas, DrawParam::new().dest(pos));
 
+                canvas.set_sampler(Sampler::nearest_clamp());
                 let small_icon = &res.flower_icon;
                 let iw = small_icon.width() as f32 / 2.0 - 20.0;
                 let ih = small_icon.height() as f32 / 2.0 - 18.0;
-                graphics::draw(
-                    ctx,
+                canvas.draw(
                     small_icon,
                     DrawParam::new().dest(pos + Vector2::new(-iw, -ih)),
-                )?;
-                graphics::draw(
-                    ctx,
+                );
+                canvas.draw(
                     small_icon,
                     DrawParam::new()
                         .dest(pos + Vector2::new(CARD_WIDTH + iw, CARD_HEIGHT + ih))
                         .rotation(f32::consts::PI),
-                )?;
+                );
+                canvas.set_default_sampler();
 
                 let large_icon = &res.flower_image;
                 let lw = (CARD_WIDTH - large_icon.width() as f32) / 2.0;
                 let lh = (CARD_HEIGHT - large_icon.height() as f32) / 2.0;
-                graphics::draw(
-                    ctx,
+                canvas.draw(
                     large_icon,
                     DrawParam::new().dest(pos + Vector2::new(lw, lh)),
-                )?;
+                );
             }
             Suite::Dragon(ref c) => {
-                res.card_front.draw(ctx, DrawParam::new().dest(pos))?;
+                res.card_front.draw(canvas, DrawParam::new().dest(pos));
 
+                canvas.set_sampler(Sampler::nearest_clamp());
                 let small_icon = &res.dragon_icons[c];
                 let iw = small_icon.width() as f32 / 2.0 - 20.0;
                 let ih = small_icon.height() as f32 / 2.0 - 18.0;
-                graphics::draw(
-                    ctx,
+                canvas.draw(
                     small_icon,
                     DrawParam::new()
                         .dest(pos + Vector2::new(-iw, -ih))
                         .color(c.to_icon_color()),
-                )?;
-                graphics::draw(
-                    ctx,
+                );
+                canvas.draw(
                     small_icon,
                     DrawParam::new()
                         .dest(pos + Vector2::new(CARD_WIDTH + iw, CARD_HEIGHT + ih))
                         .rotation(f32::consts::PI)
                         .color(c.to_icon_color()),
-                )?;
+                );
+                canvas.set_default_sampler();
 
                 let large_icon = &res.dragon_images[c];
                 let lw = (CARD_WIDTH - large_icon.width() as f32) / 2.0;
                 let lh = (CARD_HEIGHT - large_icon.height() as f32) / 2.0;
-                graphics::draw(
-                    ctx,
+                canvas.draw(
                     large_icon,
                     DrawParam::new()
                         .dest(pos + Vector2::new(lw, lh))
                         .color(c.to_icon_color()),
-                )?;
+                );
             }
             Suite::Number(i, ref c) => {
-                res.card_front.draw(ctx, DrawParam::new().dest(pos))?;
+                res.card_front.draw(canvas, DrawParam::new().dest(pos));
 
+                canvas.set_sampler(Sampler::nearest_clamp());
                 let small_icon = &res.suite_icons[c];
                 let iw = small_icon.width() as f32 / 2.0 - 20.0;
                 let ih = small_icon.height() as f32 / 2.0 - 37.0;
-                graphics::draw(
-                    ctx,
+                canvas.draw(
                     small_icon,
                     DrawParam::new()
                         .dest(pos + Vector2::new(-iw, -ih))
                         .color(c.to_icon_color()),
-                )?;
-                graphics::draw(
-                    ctx,
+                );
+                canvas.draw(
                     small_icon,
                     DrawParam::new()
                         .dest(pos + Vector2::new(CARD_WIDTH + iw, CARD_HEIGHT + ih))
                         .rotation(f32::consts::PI)
                         .color(c.to_icon_color()),
-                )?;
+                );
+                canvas.set_default_sampler();
 
                 let large_icon = &res.suite_images[c][i as usize - 1];
                 let lw = (CARD_WIDTH - large_icon.width() as f32) / 2.0;
                 let lh = (CARD_HEIGHT - large_icon.height() as f32) / 2.0;
-                graphics::draw(
-                    ctx,
+                canvas.draw(
                     large_icon,
                     DrawParam::new()
                         .dest(pos + Vector2::new(lw, lh))
                         .color(c.to_icon_color()),
-                )?;
+                );
 
                 let nr = &res.numbers[i as usize - 1];
-                let nw = nr.width(ctx) as f32 / 2.0 - 20.0;
-                let nh = nr.height(ctx) as f32 / 2.0 - 18.0;
-                graphics::draw(
-                    ctx,
+                let dim = nr.dimensions(ctx);
+                let nw = dim.w / 2.0 - 20.0;
+                let nh = dim.h / 2.0 - 18.0;
+                canvas.draw(
                     nr,
                     DrawParam::new()
                         .dest(pos + Vector2::new(-nw, -nh))
                         .color(c.to_font_color()),
-                )?;
-                graphics::draw(
-                    ctx,
+                );
+                canvas.draw(
                     nr,
                     DrawParam::new()
                         .dest(pos + Vector2::new(CARD_WIDTH + nw, CARD_HEIGHT + nh))
                         .rotation(f32::consts::PI)
                         .color(c.to_font_color()),
-                )?;
+                );
             }
         }
         //graphics::rectangle(ctx, graphics::DrawMode::Line(1.0), graphics::Rect::new(pos.x, pos.y, WIDTH, HEIGHT))?;

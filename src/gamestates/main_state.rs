@@ -1,15 +1,15 @@
-use ggez::event::{EventHandler, KeyCode, KeyMods, MouseButton};
-use ggez::graphics;
-use ggez::timer;
+use crate::game::Game;
+use crate::resources::Resources;
+use ggez::event::EventHandler;
+use ggez::graphics::Canvas;
+use ggez::input::keyboard::{KeyCode, KeyInput};
+use ggez::input::mouse::MouseButton;
+use ggez::winit::keyboard::PhysicalKey;
 use ggez::{Context, GameResult};
 
-use game::Game;
-use resources::Resources;
-
-use ai::{AiResult, AiState};
+use crate::ai::{AiResult, AiState};
 
 use super::welcome_state::WelcomeState;
-use super::GameWrapper;
 
 pub struct MainState {
     pub resources: Resources,
@@ -20,24 +20,14 @@ pub struct MainState {
     last_y: f32,
 }
 
-impl MainState {
-    pub fn next_state(self) -> GameWrapper {
-        if self.game.check_win_condition() {
-            GameWrapper::Victory(self.into())
-        } else {
-            GameWrapper::GiveUp(self.into())
-        }
-    }
-}
-
 impl EventHandler for MainState {
-    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+    fn update(&mut self, ctx: &mut Context) -> GameResult {
         if !self.resources.music.playing() {
             self.resources.music.set_volume(0.5);
             self.resources.music.play()?;
         }
 
-        let dt = timer::duration_to_f64(timer::delta(ctx)) as f32;
+        let dt = ctx.time.delta().as_secs_f32();
         self.game.state.run_update(dt, &mut self.resources);
 
         if self.game.check_win_condition() {
@@ -45,15 +35,18 @@ impl EventHandler for MainState {
                 self.resources.add_win(ctx);
                 self.win_counted = true;
             }
-            ggez::event::quit(ctx);
+            ctx.request_quit();
         }
 
         Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.game.state.run_render(ctx, &mut self.resources)?;
-        graphics::present(ctx)?;
+    fn draw(&mut self, ctx: &mut Context) -> GameResult {
+        let mut canvas = Canvas::from_frame(&ctx.gfx, None);
+        self.game
+            .state
+            .run_render(ctx, &mut self.resources, &mut canvas)?;
+        canvas.finish(&mut ctx.gfx)?;
         Ok(())
     }
 
@@ -63,36 +56,51 @@ impl EventHandler for MainState {
         _button: MouseButton,
         x: f32,
         y: f32,
-    ) {
+    ) -> GameResult {
         self.game
             .state
             .handle_mouse_button_down(x, y, &mut self.resources);
+        Ok(())
     }
 
-    fn mouse_button_up_event(&mut self, _ctx: &mut Context, _button: MouseButton, x: f32, y: f32) {
+    fn mouse_button_up_event(
+        &mut self,
+        _ctx: &mut Context,
+        _button: MouseButton,
+        x: f32,
+        y: f32,
+    ) -> GameResult {
         self.game
             .state
             .handle_mouse_button_up(x, y, &mut self.resources);
+        Ok(())
     }
 
-    fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, _xrel: f32, _yrel: f32) {
+    fn mouse_motion_event(
+        &mut self,
+        _ctx: &mut Context,
+        x: f32,
+        y: f32,
+        _xrel: f32,
+        _yrel: f32,
+    ) -> GameResult {
         let xrel = x - self.last_x;
         let yrel = y - self.last_y;
         self.last_x = x;
         self.last_y = y;
         self.game.state.handle_mouse_move(xrel, yrel);
+        Ok(())
     }
 
     fn key_down_event(
         &mut self,
         ctx: &mut Context,
-        keycode: KeyCode,
-        _keymod: KeyMods,
-        _repeat: bool,
-    ) {
-        match keycode {
-            KeyCode::Escape => ggez::event::quit(ctx),
-            KeyCode::Back => {
+        input: KeyInput,
+        _repeated: bool,
+    ) -> GameResult {
+        match input.event.physical_key {
+            PhysicalKey::Code(KeyCode::Escape) => ctx.request_quit(),
+            PhysicalKey::Code(KeyCode::Backspace) => {
                 let ai = AiState::new(self.game.export());
                 match ai.astar(10000) {
                     AiResult::Unknown => println!("?"),
@@ -102,6 +110,7 @@ impl EventHandler for MainState {
             }
             _ => {}
         }
+        Ok(())
     }
 }
 

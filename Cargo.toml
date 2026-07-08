@@ -1,6 +1,7 @@
 [package]
 name = "solitaire"
 version = "0.3.0"
+edition = "2024"
 authors = ["Swampsoft <https://github.com/Swampsoft>"]
 
 [features]
@@ -9,12 +10,12 @@ profiling = ["cpuprofiler"]
 
 
 [dependencies.ggez]
-version = "0.5"
+version = "0.10"
 #features = ["cargo-resource-root"]
 
 [dependencies]
-cpuprofiler = { version = "0.0.3", optional = true }
-env_logger = "0.8"
+cpuprofiler = { version = "0.0.4", optional = true }
+env_logger = "0.11"
 log = "0.4"
-rand = "0.7"
-rodio = "0.9"
+nalgebra = { version = "0.35", features = ["convert-mint"] }
+rand = "0.10"

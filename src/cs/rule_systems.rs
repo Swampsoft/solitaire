@@ -1,6 +1,6 @@
-use rules;
-use types::*;
-use utils::all::All;
+use crate::rules;
+use crate::types::*;
+use crate::utils::all::All;
 
 use super::GameState;
 

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::slice;
 
+use ggez::graphics::Canvas;
 use ggez::{Context, GameResult};
 
 mod animation_systems;
@@ -8,8 +9,8 @@ mod input_systems;
 mod render_systems;
 mod rule_systems;
 
-use resources::Resources;
-use types::*;
+use crate::resources::Resources;
+use crate::types::*;
 
 use self::render_systems::*;
 
@@ -36,7 +37,7 @@ pub struct GameState {
 }
 
 impl GameState {
-    pub fn new_entity(&mut self) -> EntityBuilder {
+    pub fn new_entity(&mut self) -> EntityBuilder<'_> {
         EntityBuilder::new(self)
     }
 
@@ -74,7 +75,7 @@ impl GameState {
         self.drag_lock = None;
     }
 
-    pub fn iter(&self) -> slice::Iter<Entity> {
+    pub fn iter(&self) -> slice::Iter<'_, Entity> {
         self.entities.iter()
     }
 
@@ -110,13 +111,19 @@ impl GameState {
         self.busy
     }
 
-    pub fn run_render(&mut self, ctx: &mut Context, res: &mut Resources) -> GameResult<()> {
-        self.render_queue.background_render_system(ctx, res)?;
+    pub fn run_render(
+        &mut self,
+        ctx: &mut Context,
+        res: &mut Resources,
+        canvas: &mut Canvas,
+    ) -> GameResult<()> {
         self.render_queue
-            .button_render_system(ctx, res, &self.positions, &self.buttons)?;
+            .background_render_system(ctx, res, canvas)?;
+        self.render_queue
+            .button_render_system(res, canvas, &self.positions, &self.buttons)?;
         self.render_queue
             .stack_render_system(&self.positions, &self.stacks, &self.zorder)?;
-        self.render_queue.render(ctx, res)?;
+        self.render_queue.render(ctx, res, canvas)?;
         Ok(())
     }
 

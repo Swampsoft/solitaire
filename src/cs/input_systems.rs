@@ -1,11 +1,11 @@
-use rules;
-use types::*;
-use utils::all::All;
-use utils::bbox::BoundingBox;
+use crate::rules;
+use crate::types::*;
+use crate::utils::all::All;
+use crate::utils::bbox::BoundingBox;
 
 use super::GameState;
 
-use resources::Resources;
+use crate::resources::Resources;
 
 impl GameState {
     pub fn button_click_system(&mut self, click_pos: Point2) {

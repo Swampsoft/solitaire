@@ -1,7 +1,7 @@
 use std::collections::{BinaryHeap, HashSet};
 
-use rules;
-use types::{Stack, StackRole, Suite};
+use crate::rules;
+use crate::types::{Stack, StackRole, Suite};
 
 pub enum AiResult {
     Unknown,

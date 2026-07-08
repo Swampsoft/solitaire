@@ -1,42 +1,35 @@
+use crate::game::Game;
+use crate::resources::Resources;
 use ggez::event::*;
-use ggez::graphics;
-use ggez::timer;
+use ggez::graphics::Canvas;
 use ggez::{Context, GameResult};
-
-use game::Game;
-use resources::Resources;
 
 use super::main_state::MainState;
 use super::victory_state::VictoryState;
-use super::GameWrapper;
 
 pub struct GiveupState {
     pub resources: Resources,
     pub game: Game,
 }
 
-impl GiveupState {
-    pub fn next_state(self) -> GameWrapper {
-        GameWrapper::Welcome(self.into())
-    }
-}
-
 impl EventHandler for GiveupState {
-    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let dt = timer::duration_to_f64(timer::delta(ctx)) as f32;
+    fn update(&mut self, ctx: &mut Context) -> GameResult {
+        let dt = ctx.time.delta().as_secs_f32();
         self.game.state.run_update(dt, &mut self.resources);
 
         if !self.game.state.busy() {
-            ggez::event::quit(ctx);
+            ctx.request_quit();
         }
 
         Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.game.state.run_render(ctx, &mut self.resources)?;
-
-        graphics::present(ctx)?;
+    fn draw(&mut self, ctx: &mut Context) -> GameResult {
+        let mut canvas = Canvas::from_frame(&ctx.gfx, None);
+        self.game
+            .state
+            .run_render(ctx, &mut self.resources, &mut canvas)?;
+        canvas.finish(&mut ctx.gfx)?;
         Ok(())
     }
 }

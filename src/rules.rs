@@ -1,4 +1,4 @@
-use types::*;
+use crate::types::*;
 
 pub fn check_victory<'a, I: Iterator<Item = &'a Stack> + Clone>(stacks: I) -> bool {
     let a = stacks
