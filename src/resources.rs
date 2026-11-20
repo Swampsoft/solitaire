@@ -225,7 +225,7 @@ impl Resources {
             Ok(mut f) => {
                 let mut string = String::new();
                 f.read_to_string(&mut string)?;
-                let n: u32 = string.parse().unwrap();
+                let n: u32 = string.trim().parse().unwrap_or(0);
                 Ok(n)
             }
             Err(GameError::ResourceNotFound(_, _)) => Ok(0),
