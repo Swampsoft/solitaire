@@ -138,6 +138,7 @@ impl Game {
                 .target_stacks
                 .iter()
                 .all(|&s| self.state.get_stack(s).unwrap().len() == 9)
+            && self.state.get_stack(self.flower_stack).unwrap().len() == 1
     }
 
     pub fn shuffled_deck() -> Stack {
