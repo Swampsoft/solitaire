@@ -4,6 +4,7 @@
 
 _This project is not associated with Zachtronics or SHENZHEN I/O._
 
+
 This is an implementation of the Solitaire mini-game included in the game SHENZHEN I/O. It comes with a set of custom 
 made graphics and no audio, but can use the original game's assets if they are installed on the system.
 
